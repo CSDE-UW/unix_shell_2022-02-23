@@ -1,0 +1,30 @@
+--- 
+title: "Introduction to the UNIX shell"
+author: "[Phil Hurvitz](mailto:phurvitz@uw.edu)"
+date: '`r format(Sys.time(), "%Y-%m-%d %H:%M")`'
+site: bookdown::bookdown_site
+output: bookdown::gitbook
+documentclass: book
+bibliography: [book.bib, packages.bib]
+biblio-style: apalike
+link-citations: yes
+github-repo: rstudio/bookdown-demo
+description: "This book covers the CSDE workshop \"Introduction to the UNIX shell.\""
+---
+
+# Introduction
+
+This is the documentation for the CSDE workshop `Introduction to the UNIX shell`. All of the instructions, examples, output, and code are contained herein. The workshop materials are meant to be either self-guided or used in a live workshop.
+
+## Prerequisites
+
+The course assumes no prior knowledge of UNIX or Linux. However, we do assume that you have some knowledge of:
+
+1. Using a command-line interface
+    
+    You may have experience with this in programming in R or other languages, or using the Windows/DOS command prompt, or the Mac OS terminal (which is actually a Linux shell)
+2. How hierarchical file structures work
+    
+    You are likely familiar with this from using the Windows Explorer or the Mac Finder.
+    
+## Course organization
