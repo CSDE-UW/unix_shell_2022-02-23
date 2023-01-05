@@ -37,7 +37,6 @@ The course assumes no prior knowledge of UNIX or Linux. However, we do assume th
     
     You are likely familiar with this from using the Windows Explorer or the Mac Finder.
     
-
     
 ## Course organization
 
@@ -58,3 +57,7 @@ The course assumes no prior knowledge of UNIX or Linux. However, we do assume th
     1. Perhaps pdf() dev.off() or ggsave() to make figures
 1. Hyak stuff, queueing (slurm), jobs (bg, fg, &, cron), sequential batch submission
 1. Some repeated version of 9. With 3-5 sequential batch submissions for each user
+
+## `Git` source
+
+The course note source is available as a git repository at [unix_shell_2022-02-23](https://github.com/CSDE-UW/unix_shell_2022-02-23/).
