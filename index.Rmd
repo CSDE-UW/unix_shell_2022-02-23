@@ -1,5 +1,5 @@
 --- 
-title: "Introduction to the UNIX shell"
+title: "Introduction to the Unix shell"
 author: "[Phil Hurvitz](mailto:phurvitz@uw.edu)"
 date: '`r format(Sys.time(), "%Y-%m-%d %H:%M")`'
 site: bookdown::bookdown_site
@@ -9,14 +9,24 @@ bibliography: [book.bib, packages.bib]
 biblio-style: apalike
 link-citations: yes
 github-repo: rstudio/bookdown-demo
-description: "This book covers the CSDE workshop \"Introduction to the UNIX shell.\""
+description: "This book covers the CSDE workshop \"Introduction to the Unix shell.\""
 ---
 
 # Introduction
 
-This is the documentation for the CSDE workshop `Introduction to the UNIX shell`. All of the instructions, examples, output, and code are contained herein. The workshop materials are meant to be either self-guided or used in a live workshop.
+This is the documentation for the CSDE workshop `Introduction to the Unix shell`. All of the instructions, examples, output, and code are contained herein. The workshop materials are meant to be either self-guided or used in a live workshop.
+
+`Unix` is a computer operating system: a set of programs that allow users to direct computer activities, including input, processing, and analysis. The system is capable of simultaneously handling multiple activities from multiple users. The development of Unix started around 1969 at AT&T Bell Labs by Ken Thompson and Dennis Ritchie. `Linux` is a free and open-source implementation of Unix, which was originally developed by Linus Torvalds in the early 1990s. This set of documentation will use the term "Unix" to refer to both Unix and Linux.
+
+In this workshop, students will learn the basics of interacting with the Unix operating system through the Unix shell, which is an interactive terminal that accepts interactive command-line or scripted input and produces printed or stored outputs. By the end of the workshop, students will learn about the overall organization of the Unix system, including a set of Unix commands and utilities, the structure of and use of the Unix file system, and some practical applications.
+
+## Target audience
+
+The target audience for this workshop spans the range from those who are curious about what the Unix shell is to those who are wanting to perform data-related tasks efficiently, particularly on large text files.
 
 ## Prerequisites
+
+Students will need to have a CSDE computing account (see [CSDE Computing Accounts](https://csde.washington.edu/computing/accounts/)) as well as access to the CSDE Linux/Unix Environment (see [CSDE Additional Computer Accounts](https://csde.washington.edu/netid/csde-computer-account/csde-additional-computer-account-request-form/); select "UNIX Network in the request).
 
 The course assumes no prior knowledge of UNIX or Linux. However, we do assume that you have some knowledge of:
 
@@ -27,4 +37,24 @@ The course assumes no prior knowledge of UNIX or Linux. However, we do assume th
     
     You are likely familiar with this from using the Windows Explorer or the Mac Finder.
     
+
+    
 ## Course organization
+
+1. What is Linux and why use it?
+1. Log on, screen
+1. File & dir structures, navigation, cd, pwd, ~, ls, tree, ln -s
+1. File operations (mv, rm, cp, touch, mkdir, rmdir, scp [machine to machine], zip/unzip/7za, piping, redirection stdin/out/stderr, head, tail, more), symbolic linking
+    1. Ihsan/Jess to create .zip and .tar.gz of scripts and materials so that they can be scp-ed
+1. man, cmd –help
+1. text file processing, editing (nano mention vim, emacs)
+1. Note to use ExpanDrive on terminal servers for accessing home dir
+1. shell scripting – mention and give an example
+1. Cygwin--the Windows implementaiton of Unix tools
+1. git –mention
+1. R, batch–example of a complete work flow
+    1. One bootstrap
+    1. Perhaps cat() or print() to show progress in out file
+    1. Perhaps pdf() dev.off() or ggsave() to make figures
+1. Hyak stuff, queueing (slurm), jobs (bg, fg, &, cron), sequential batch submission
+1. Some repeated version of 9. With 3-5 sequential batch submissions for each user
