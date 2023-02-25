@@ -1,0 +1,21 @@
+```{r}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# Running R scripts on UW high performance computing cluster, [Hyak](https://hyak.uw.edu/)
+
+See İhsan Kaveci's notes and GitHub repository: [https://github.com/ihsankahveci/hyak_workshop](https://github.com/ihsankahveci/hyak_workshop).

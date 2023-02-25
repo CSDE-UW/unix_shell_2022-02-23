@@ -1,0 +1,222 @@
+```{r echo=FALSE}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# Hierarchical arrangement of the file system
+The Unix file system is hierarchical, often modeled as an upside-down tree, with the "root" directory, `/`, at the top, branching down to various subdirectories and folders. This is the same as what you would see in a Mac, and different from Windows, where file systems are partitioned across different drive letters.
+
+```{r}
+image_link("images/Standard-unix-filesystem-hierarchy.svg")
+```
+
+[from https://www.wikiwand.com/en/Unix_filesystem]
+
+
+It is important to be able to navigate through the file system, or to specify locations of files when executing commands (unless the command is located in the executable $PATH).
+
+Some notation:
+
+* `.` = current working directory (relative path)
+* `..` = up one directory from the current directory (relative path)
+* `../..` = up two levels from the current directory (relative path)
+* `../foo` = up one directory, then down into the directory named "foo"  (relative path)
+* `/usr/local/` = absolute path to /usr/local
+
+## Navigating the file system
+
+Let's copy another utility that allows visualization of the file system layout, and then run that command
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cp ~phurvitz/unixshell/tree ~/bin       # copy the utility
+cd                                      # change to home directory
+tree                                    # listing of file system
+```
+
+<div class="bash"><pre>ufl@nori:~$ cp ~phurvitz/unixshell/tree ~/bin       # copy the utility
+cd                                      # change to home directory
+tree                                    # listing of file system
+.
+├── bin
+│   ├── cal
+│   ├── nano
+│   ├── ncal
+│   └── tree
+└── junk
+    └── today.txt
+</pre></div>
+
+Here we can see that there are two directories within the home directory, `bin` and `junk`.
+
+We will navigate into the `bin` directory:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd bin
+```
+
+For many commands, such as `cd` (change directory), `cp` (copy file or directory), `mv` (move file or directory), if the command executes successfully, there is nothing printed on standard output. Here, we have changed working directory to `~/bin` and we see no response from the system, but the prompt does show that we are now in `~/bin`.
+
+<div class="bash"><pre>ufl@nori:~/bin$</pre></div>
+
+To verify, we can show the current working directory with `pwd` ("print working directory" or "present working directory) and also the `tree` and `ls` commands to show files
+
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+pwd     # print working directory
+tree    # graphical list
+ls -l   # long list of directories and files
+```
+
+<div class="bash"><pre>ufl@nori:~/bin$ pwd     # print working directory
+tree    # graphical list
+ls -l   # long list of directories and files
+/homes/ufl/bin
+.
+├── cal
+├── nano
+├── ncal
+└── tree
+
+0 directories, 4 files
+total 554
+-rwxr-xr-x 1 ufl ufl  37832 Feb 21 16:03 cal
+-rwxr-xr-x 1 ufl ufl 283144 Feb 21 17:11 nano
+-rwxr-xr-x 1 ufl ufl  37832 Feb 21 16:15 ncal
+-rwxr-xr-x 1 ufl ufl  81288 Feb 22 08:49 tree
+</pre></div>
+
+We will now navigate from the `~/bin` directory to the `~/junk` directory and list its contents, also noting that the prompt will change to show we are in the `~/junk` directory:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd ../junk      # move up one level and down into "junk"
+ls              # list contents of present directory
+```
+
+<div class="bash"><pre>ufl@nori:~/bin$ cd ../junk
+ufl@nori:~/junk$ ls
+today.txt
+ufl@nori:~/junk$
+</pre></div>
+
+It is also possible to navigate to a completely different part of the file system using absolute path names:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd /usr/local       # move to /usr/local
+ls -ltr             # long list of files sorted by time
+```
+
+<div class="bash"><pre>ufl@nori:~/bin$ cd /usr/local       # move to /usr/local
+ls -ltr             # long list of files sorted by time
+total 32
+drwxr-xr-x 2 root root 4096 Apr 20  2022 src
+lrwxrwxrwx 1 root root    9 Apr 20  2022 man -> share/man
+drwxr-xr-x 2 root root 4096 Apr 20  2022 include
+drwxr-xr-x 2 root root 4096 Apr 20  2022 games
+drwxr-xr-x 2 root root 4096 Apr 20  2022 etc
+drwxr-xr-x 2 root root 4096 Apr 20  2022 sbin
+drwxr-xr-x 5 root root 4096 Nov  2 16:12 share
+drwxr-xr-x 4 root root 4096 Nov  2 16:14 lib
+drwxr-xr-x 2 root root 4096 Jan  9 15:46 bin
+</pre></div>
+
+Sometimes one wants to quickly change to a different directory, perform an action, and return to the previous directory. For these we can use `pushd` (change working directory but remember the previous location), `popd` (return to the previous location), and `dirs` (show the pushd stack).
+
+Let's move from `/usr/local` to `/etc` and then to `~/bin` and back to `/usr/local`:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+pushd /etc/
+```
+
+<div class="bash"><pre>ufl@nori:/usr/local$ pushd /etc
+/etc /usr/local
+</pre></div>
+
+Although the "stack" is shown with every `pushd` and `popd` command, it is possible to list the stack if you want to know what the stack's layout is:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+dirs        # show stack, with bottom of stack at the right
+```
+
+Now move to to `~/bin`
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+pushd ~/bin
+```
+
+<div class="bash"><pre>ufl@nori:/etc$ pushd ~/bin
+~/bin /etc /usr/local
+</pre></div>
+
+And finally back to the original location. Note that separate commands can be run by delimiting them with a semicolon.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+popd; popd
+```
+
+<div class="bash"><pre>ufl@nori:~/bin$ popd; popd
+/etc /usr/local
+/usr/local
+</pre></div>
+
+## Running commands with explicit pathnames
+
+It is possible to run a command that is located in a different directory from the current working directory:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+~phurvitz/unixshell/hello_world.sh
+```
+
+<div class="bash"><pre>
+ufl@nori:/usr/local$ ~phurvitz/unixshell/hello_world.sh
+Hello World
+</pre></div>
+
+equivalently:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd      # move to home
+../phurvitz/unixshell/hello_world.sh        # run a command relative to current path
+```
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+/homes/phurvitz/unixshell/hello_world.sh    # run a command specifying complete path name
+```
+
+Understanding and navigating the file system is critical because there may be different files with identical *file* names but different *path* names. For example, suppose you had a directory containing subdirectories with names of different countries, but within each subdirectory a file named `birth_death_rates.csv` and you wrote a script to process each file serially in a loop.
+
+## Accessing your files on the CSDE Linux servers using ExpanDrive
+
+CSDE terminal servers (TS1, TS2, Sim1, Sim2, etc.) are running ExpanDrive software, that allows mounting of SFTP or cloud storage file systems as a Windows mapped drive. This can make it easier for you to access and manage your files. Any changes you make to the files using the mapped drive will be reflected within the Linux environment.
+
+Here I have selected `SFTP` as the method to connect to `nori`.
+
+```{r}
+image_link("images/2023-02-22 17_51_58-ExpanDrive.png")
+```
+
+The server and connection information is entered.
+
+```{r}
+image_link("images/2023-02-22 17_52_27-ExpanDrive.png")
+```
+
+We can see the files. Accessing files this way is far more convenient than using WinSCP or other SFTP utilities.
+
+```{r}
+image_link("images/2023-02-22 18_01_09-Z__junk.png")
+```
+
+However, utilities such as ExpandDrive may not be available in different organizations, so there is no substitute for learning the native Unix way of managing the file system.

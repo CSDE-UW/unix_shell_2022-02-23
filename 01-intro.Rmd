@@ -1,1 +1,75 @@
-# What is the UNIX shell? {#whatis}
+```{r, echo=FALSE}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+# adds an image with a URL to a larger size
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# What is Unix?
+Unix is a family of computer operating system originally developed at AT&T Bell Labs by Ken Thompson and Dennis Ritchie starting in the late 1960s. It was originally developed as a programming environment for solving scientific problems. Some of the hallmarks of Unix are:
+
+* Multiuser (multiple simultaneous named users)
+* Multitasking (several programs, processes, and services can be running at the same time)
+* Text-based (data, commands, configuration files)
+* Files stored in a hierarchical file system
+
+Many of these features are now common across other operating systems (Windows, MacOS--which is itself now a Unix variant).
+
+Linux is a variant of Unix that was written originally by Linus Torvalds in the early 1990s. The effort to create Linux was in response to the high prices of proprietary bundled hardware + Unix OS combinations (e.g., HP, IBM, Sun Microsystems). Linux was built to run on standard DOS/Windows PCs, which were cheaper than the commercial workstations sold for Unix. Also, Linux was developed to be free (or at least with free versions). Today, Linux installations far outnumber other Unix installations, and for many purposes is now indistinguishable from commercial Unix variants.
+
+## Why use Unix/Linux?
+O'Reilly has a decent chapter [Why Use Unix](https://www.oreilly.com/library/view/learning-unix-for/9781449332303/ch01.html) with several reasons why you would want to use Unix (or Linux). 
+
+Some additional reasons from my own experience:
+
+1. Unix has many utilities that do not exist within the suite of graphical applications in Windows or MacOS.
+1. Unix was built by scientists and engineers for scientific and engineering applications, whereas other operating systems are more geared toward business and "productivity" uses.
+1. Using the Unix shell for file operations (copy, move, rename) is usually much faster and more efficient than using a graphical user interface, particularly for well structured file systems.
+1. The amount of commands and applications contributed by users continues to grow.
+1. With Linux, nearly all applications are free and open source. These include but are not limited to:
+    1. All major programming languages (Python, C, C++, Java, etc.)
+    1. R for statistical and general programming
+    1. SQL database with PostgreSQL or MySQL
+    1. Graphics editing with Gimp (a Photoshop replacement)
+1. Tools for programming and automation are built in: shell scripts, scheduling jobs with [cron](https://en.wikipedia.org/wiki/Cron).
+1. Better control over processes (e.g., stopping a stalled process using `ps` and `kill`).
+1. Lower likelihood of being hacked (compared to Windows).
+1. Although early Unix environments were completely terminal/text based, modern implementations include fully functional graphical interfaces (X Windows, Gnome, KDE)
+
+## Unix architecture
+
+Before describing the UNIX shell, we should look at a conceptual diagram of Unix architecture. At the center is the physical `hardware` (motherboard, central processing unit, memory, disk drives, etc.). The `kernel` is the central core of the operating system, that acts as a direct interface to the system hardware. `r fn("unixdiagram", display = "cite")` presents a simplified representation of the Unix environment. **[Note: for all of the figures, you can click on them to open in a new tab.]**
+
+```{r unixdiagram, echo=FALSE}
+image_link("images/arch.png")
+```
+
+_`r fn("unixdiagram", "A simplified representation of the Unix environment")`_
+
+## What is the UNIX shell? {#whatis}
+
+Users do not typically interact directly with the hardware or kernel, but do so through the `shell` or applications. The shell is itself a program that provides an interactive command-line interface (CLI) environment. The shell is most commonly used interactively, but can also be used to run scripted programs. "User Apps" are applications with graphical user interfaces, which can either run compiled low-level code or shell programs. Both the shell and user apps act as interfaces for getting input from the user (entered on the command line or in a graphical user interface), submitting the instructions to the kernel, which then directs the hardware to perform processing, which is in turn returned to the kernel and shell or user app for display purposes.
+
+There are a number of characteristics of Unix commands. Usually:
+
+* Programs are parsimonious--they should do only one operation or one set of very similar operations, and to do those well.
+* Programs in the Unix shell are usually designed to work together, so that output from one command can act as input to another command.
+* Programs work with text as input and output, although some have binary inputs and outputs.
+
+## Different shells
+
+There are a number of different shells that have been written over time. These include `sh`, `csh`, `tsh`, `zsh`, the `Bourne shell`, etc. The most commonly used shell in the [GNU/Linux](https://www.gnu.org/home.en.html) ("GNU's Not Unix") operating system at this time is `bash`, also known as the `Bourne-again shell`. `bash` should be able to do everything you need, for both interactive and programming tasks.
+
+Before going into any further detail, a working example may be of use.

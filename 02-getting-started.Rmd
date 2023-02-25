@@ -1,0 +1,234 @@
+```{r echo=FALSE}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+# adds an image with a URL to a larger size
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# Getting started with a woking example of interacting with the shell
+For this tutorial, it is assumed that you are working on either a lab computer or on the CSDE terminal server. If you are using your own computer, results are likely to be different from what you see in these materials.
+
+## Download and run a terminal emulator
+
+Click the link for the terminal emulator `putty.exe` from [PuTTY](https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html). You should download the executable for later use. If you are familiar with other terminal emulators, you can use your own choice. I have saved the file in a folder I created: `H:\bin`. 
+
+```{r putty00, fig.cap="PuTTY download", echo=FALSE}
+image_link("images/2023-02-17 16_09_06-Download PuTTY_ latest release.png")
+```
+
+I then pinned it to my start menu for faster access:
+
+```{r putty01, fig.cap="PuTTY pinning to Windows Start", echo=FALSE}
+image_link("images/2023-02-17 16_14_02-Window.png")
+```
+
+Start PuTTY by clicking on the shortcut you just made.
+
+```{r putty03, fig.cap="PuTTY start", echo=FALSE}
+image_link("images/2023-02-17 16_17_06-Window.png")
+```
+
+Before connecting, we will do some configuration. In the `Host Name` entry, type `x.csde.washington.edu` but replace the `x` with one of the CSDE Ubuntu Linux servers (`nori`, `libra`, or `union`). Enter the server's name in the `Saved Sessions` entry. Tap `Save`.
+
+```{r i01, fig.cap="cap", echo=FALSE}
+image_link("images/2023-02-17 16_23_37-PuTTY Configuration.png")
+```
+
+In the `Connection > Data` dialog, enter your username (your UWNetID). This will prevent you from needing to specify the username at login time.
+
+```{r i02, fig.cap="cap", echo=FALSE}
+image_link("images/2023-02-17 16_25_33-PuTTY Configuration.png")
+```
+
+Here we'll change the font to make things more readable. In the `Window > Appearance` dialog, change to Lucida Console 12 or whatever your favorite choice is. Always select a monospaced font.
+
+```{r i03, fig.cap="cap", echo=FALSE}
+image_link("images/2023-02-17 16_31_15-Window.png")
+```
+
+Next, return to the `Session` dialog and tape `Save` to save all of the configurations. This will save you time if you need to log in to the same computer multiple times. You can save multiple sessions for different hosts. Once you have saved your configuration, tap `Open` to open a connection. 
+
+The first time you log on you will probably see a security alert. This is usually nothing to worry about and you can click `Accept`.
+
+```{r i04, fig.cap="cap", echo=FALSE}
+image_link("images/2023-02-17 16_24_28-PuTTY Security Alert.png")
+```
+
+You should now see a welcome message that may or may not be informative. You are now logged in! The prompt you see should show your username (your UWNetID) and `@x` where `x` is the server name, and some other characters `:~$` where `~` is shorthand for "home directory." When you change your working directory, this will be shown in the prompt.
+
+```{r, fig.cap="cap", echo=FALSE}
+image_link("images/2023-02-17 16_32_05-nori.csde.washington.edu - PuTTY.png")
+```
+
+Now we will run a command to list the files in the home directory. The command is `ls`, which lists files and directories in the current or specified directory, with the `-la` options, which are **l**ong listing (file mode, owner, group, size, date, and file name) and **a**ll files (including hidden files and directories, which have names that start with a period).
+
+In these workshop pages, commands that you should enter in your terminal are shown as below, with monospaced font, a light grey background, and numbered lines. The lines of code can be copied (CTRL-C in the browser, or use the copy icon at the upper right of the block of command text) and pasted (R-click or use the keyboard combination `SHIFT-INSERT`) into your terminal. Note that comments are indicated with a `#` hash mark; anything after the hash mark is not executed. Comments are especially useful in shell scripts.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls -la              # list files
+```
+
+```{r i06, fig.cap="cap", echo=FALSE}
+image_link("images/2023-02-17 16_50_33-nori.csde.washington.edu - PuTTY.png")
+```
+
+
+If your home directory contents look like mine, you will want to copy some startup scripts to your home directory. Some of these are run whenever you log in. They can set up your environment, make convenient command aliases, etc. On most Unix/Linux systems there is a directory `/etc/skel` with example startup scripts.
+
+Here we will list (`ls -la`) the files in `etc/skel`, copy (`cp`) them to our home directory, and then list the contents of our home directory again. Copy the lines of code (CTRL-C in the browser) and paste (R-click) into your terminal.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls -la /etc/skel    # list contents of /etc/skel
+cp /etc/skel/.* ~/  # copy hidden files from /etc/skel to ~/, which is shorthand for "my home directory"
+ls -la              # list files in my home directory
+```
+
+```{r}
+image_link("images/2023-02-17 16_54_16-nori.csde.washington.edu - PuTTY.png")
+```
+
+The long listing of files shows several key pieces of information:
+
+```
+-rwxrw-r--    10    root   root 2048    Jan 13 07:11 afile.exe
+?UUUGGGOOOS   00  UUUUUU GGGGGG ####    MON DD XX:XX FILENAME
+^ ^  ^  ^ ^    ^      ^      ^    ^      ^            ^- Filename.
+| |  |  | |    |      |      |    |      \-------------- Time of last modification.
+| |  |  | |    |      |      |    \--------------------- File Size OR for directory size of the metadata. (Size is *usually* in bytes on modern systems; See below.)
+| |  |  | |    |      |      \-------------------------- Group Name (for example, Users, Administrators, etc)
+| |  |  | |    |      \--------------------------------- Owner Acct
+| |  |  | |    \---------------------------------------- Link count (what constitutes a "link" here varies)
+| |  |  | \--------------------------------------------- Alternative Access (blank means none defined, anything else varies)
+| \--\--\----------------------------------------------- Read, Write and Special access modes for [U]ser, [G]roup, and [O]thers (everyone else)
+\------------------------------------------------------- File type flag
+```
+
+[https://unix.stackexchange.com/questions/103114/what-do-the-fields-in-ls-al-output-mean]
+
+From here forward, code to run in the shell will be shown in monospaced font with line numbers, e.g.,
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+mkdir ~/bin     # creates $HOME/bin directory
+cd ~/bin        # move into the $HOME/bin directory
+cp ~phurvitz/unixshell/ncal . # copy a file from one of Phil's folders here
+./ncal -b       # run the ncal executable showing today's date
+cd              # change back to the home directory
+```
+
+And the output will be shown with <span class="bash">grey outline monospaced</span>, rather than as a screen capture of the terminal session e.g., 
+
+<div class="bash"><pre>ufl@nori:~/bin$ cal
+   February 2023
+Su Mo Tu We Th Fr Sa
+          1  2  3  4
+ 5  6  7  8  9 10 11
+12 13 14 15 16 17 18
+19 20 21 22 23 24 25
+26 27 28
+</pre></div>
+
+## Command history
+Note that you can use the keyboard up and down arrows to reload previously executed commands. Try that now. If you have a command that you want to re-run but with slightly different text, you can use the arrow key to load the command, then change parts of the command, and tap ENTER to execute the modified command. Use ALT-left and ALT-right to more quickly move within the command currently shown at the prompt.
+
+You can also get a history of commands by entering:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+history
+```
+
+You will see something like this:
+
+<div class="bash"><pre>
+    1  cat /etc/lsb-release
+    2  cat /etc/motd
+    3  clear
+    4  ls
+    5  ls -la
+    6  ls /etc/skel
+    7  ls -la /etc/skel
+    8  clear
+    9  ls -la
+    ...
+</pre></div>
+
+The commands can be re-run by entering `!n` where `n` is the number shown in the command history list.
+
+## Getting help on commands
+There are two ways to get help on commands:
+
+1. command --help (works for most commands, usually brief)
+1. man command (more complete help, "man" is short for "manual", see the [Wikipedia entry for man pages](https://en.wikipedia.org/wiki/Man_page))
+  \  It should be noted that for some commands there are more than one section; some pages give help on usage, others cover file formats or other topics.
+
+Here we can look at the help for the `find` command:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+find --help
+```
+
+<div class="bash"><pre>Usage: find [-H] [-L] [-P] [-Olevel] [-D debugopts] [path...] [expression]
+
+default path is the current directory; default expression is -print
+expression may consist of: operators, options, tests, and actions:
+operators (decreasing precedence; -and is implicit where no others are given):
+      ( EXPR )   ! EXPR   -not EXPR   EXPR1 -a EXPR2   EXPR1 -and EXPR2
+      EXPR1 -o EXPR2   EXPR1 -or EXPR2   EXPR1 , EXPR2
+positional options (always true): -daystart -follow -regextype
+
+normal options (always true, specified before other expressions):
+      -depth --help -maxdepth LEVELS -mindepth LEVELS -mount -noleaf
+      --version -xdev -ignore_readdir_race -noignore_readdir_race
+tests (N can be +N or -N or N): -amin N -anewer FILE -atime N -cmin N
+      -cnewer FILE -ctime N -empty -false -fstype TYPE -gid N -group NAME
+      -ilname PATTERN -iname PATTERN -inum N -iwholename PATTERN -iregex PATTERN
+      -links N -lname PATTERN -mmin N -mtime N -name PATTERN -newer FILE
+      -nouser -nogroup -path PATTERN -perm [-/]MODE -regex PATTERN
+      -readable -writable -executable
+      -wholename PATTERN -size N[bcwkMG] -true -type [bcdpflsD] -uid N
+      -used N -user NAME -xtype [bcdpfls]      -context CONTEXT
+
+actions: -delete -print0 -printf FORMAT -fprintf FILE FORMAT -print
+      -fprint0 FILE -fprint FILE -ls -fls FILE -prune -quit
+      -exec COMMAND ; -exec COMMAND {} + -ok COMMAND ;
+      -execdir COMMAND ; -execdir COMMAND {} + -okdir COMMAND ;
+
+Valid arguments for -D:
+exec, opt, rates, search, stat, time, tree, all, help
+Use '-D help' for a description of the options, or see find(1)
+
+Please see also the documentation at https://www.gnu.org/software/findutils/.
+You can report (and track progress on fixing) bugs in the "find"
+program via the GNU findutils bug-reporting page at
+https://savannah.gnu.org/bugs/?group=findutils or, if
+you have no web access, by sending email to <bug-findutils@gnu.org>.</pre></div>
+
+
+Although it appears that the CSDE system administrators have not installed the man pages:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+man cp
+```
+
+<div class="bash"><pre>
+ufl@nori:~$ man find
+This system has been minimized by removing packages and content that are
+not required on a system that users do not log into.
+
+To restore this content, including manpages, you can run the 'unminimize'
+command. You will still need to ensure the 'man-db' package is installed.
+</pre></div>
+
+
+Complete man pages are easy to find on the internet, e.g., [man page for `find`](https://manpages.ubuntu.com/manpages/xenial/man1/find.1.html).

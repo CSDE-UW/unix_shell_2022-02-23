@@ -1,0 +1,49 @@
+```{r}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# A set of Unix utilities for files and directories
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+```
+
+<div class="bash"><pre> </pre></div>
+
+
+
+
+
+
+What is Linux and why use it?
+File operations (scp [machine to machine],  piping, )
+
+
+shell scripting – mention and give an example
+
+git –mention
+
+R, batch–example of a complete work flow
+
+One bootstrap
+Perhaps cat() or print() to show progress in out file
+Perhaps pdf() dev.off() or ggsave() to make figures
+Hyak stuff, queueing (slurm), jobs (bg, fg, &), sequential batch submission
+Some repeated version of 9. With 3-5 sequential batch submissions for each user
+
+
+piping commands (|)
+pattern matching (grep = globally search a regular expression and print)

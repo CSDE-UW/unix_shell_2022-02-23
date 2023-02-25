@@ -1,0 +1,112 @@
+```{r echo=FALSE}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# Finding files matching a file name, date, etc.
+As your collection of files grows, it is easy to forget the location where specific files are within the file system. The `find` command can be used to search for files based on different criteria.
+
+The first example will be to search for files matching a name pattern. Here we are looking in the R packages directory for any file named "tools.*"
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+find /usr/lib/R/library -name "tools.*"
+```
+
+The full set of matching files is shown:
+
+<div class="bash"><pre>ufl@nori:~$ find /usr/lib/R/library -name "tools.*"
+/usr/lib/R/library/translations/zh_CN/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/da/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/pl/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/pt_BR/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/ko/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/en@quot/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/ru/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/ja/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/it/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/de/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/zh_TW/LC_MESSAGES/tools.mo
+/usr/lib/R/library/translations/fr/LC_MESSAGES/tools.mo
+/usr/lib/R/library/tools/R/tools.rdb
+/usr/lib/R/library/tools/R/tools.rdx
+/usr/lib/R/library/tools/libs/tools.so
+/usr/lib/R/library/tools/help/tools.rdb
+/usr/lib/R/library/tools/help/tools.rdx
+</pre></div>
+
+Here we are looking for any files with modification times between Feb 21, 2023, and Feb 22, 2023. The options indicate 
+
+* `-type f` = find files (rather than directories)
+* `-newermt 2023-02-21` = _m_odification _t_ime since 2023-02-21
+* `! -newermt 2023-02-22` = _m_odification _t_ime not since 2023-02-22
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+find . -type f -newermt 2023-02-21 ! -newermt 2023-02-22
+```
+
+<div class="bash"><pre>ufl@nori:~$ find . -type f -newermt 2023-02-21 ! -newermt 2023-02-22
+./.ssh/known_hosts
+./.ssh/known_hosts.old
+./.viminfo
+./bin/cal
+./bin/nano
+./bin/ncal
+</pre></div>
+
+# Searching through files for contents, `find` + `xargs` + `grep`
+Often we are interested in finding files with specific contents, rather than files by file name or date. Here we can use a pipeline combination to find files a specific file name pattern, but also to search within the files for specific strings.
+
+Here we can search through a set of `*.R` files in the server's R package library containing the case insensitive string "hadley". The first part of the command is straightforward: "find any files at or below the current level with name '*.R'". The second part of the command `xargs` reads the output (a list of files), and constructs a command for each file, `grep -i hadley`, which is a case insensitive regular expression search for the string "hadley". 
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd /usr/lib/R/site-library
+find . -name "*.R" | xargs grep -i hadley
+```
+
+Wherever one of the R files at or below this level contain "hadley" or "Hadley" or any other upper/lowercase combinations of "hadley", we are shown the file name and the matching line.
+
+<div class="bash"><pre>ufl@nori:/usr/lib/R/site-library$ find . -name "*.R" | xargs grep -i hadley
+./iterators/examples/ihasNext.R:# by Hadley Wickham, with minor modifications by
+./remotes/install-github.R:  #' install_git("https://github.com/hadley/stringr.git")
+./remotes/install-github.R:  #' install_git("https://github.com/hadley/stringr.git", ref = "stringr-0.2")
+./remotes/install-github.R:  #' install_github(c("hadley/httr@@v0.4", "klutometis/roxygen#142",
+./remotes/install-github.R:  #' install_github("hadley/private", auth_token = "abc")
+./remotes/install-github.R:  #' install_svn("https://github.com/hadley/stringr/trunk")
+./remotes/install-github.R:  #' install_svn("https://github.com/hadley/httr/branches/oauth")
+./remotes/install-github.R:  #' install_url("https://github.com/hadley/stringr/archive/HEAD.zip")
+./pkgKitten/demo/simpleDemo.R:Sys.setenv("R_TESTS"="")                # needed for R CMD check; thanks for the tip, Hadley
+./httr/doc/quickstart.R:r <- GET("http://httpbin.org/get", add_headers(Name = "Hadley"))
+./httr/doc/api-packages.R:resp <- github_api("/repos/hadley/httr")
+./httr/doc/api-packages.R:github_api("/users/hadley")
+./httr/doc/api-packages.R:github_api("/user/hadley")
+./httr/doc/api-packages.R:ua <- user_agent("http://github.com/hadley/httr")
+./httr/doc/secrets.R:#  cipher <- encrypt("<username>\n<password>", "hadley")
+./dplyr/doc/rowwise.R:df <- tibble(name = c("Mara", "Hadley"), x = 1:2, y = 3:4, z = 5:6)
+./dbplyr/doc/dbplyr.R:#    user = "hadley",
+./roxygen2/doc/extending.R:roxy_tag("name", "Hadley")
+./roxygen2/doc/extending.R:str(roxy_tag("name", "Hadley"))
+./usethis/templates/tidy-eval.R:#' section](https://adv-r.hadley.nz/metaprogramming.html) of [Advanced
+./usethis/templates/tidy-eval.R:#' R](https://adv-r.hadley.nz) may also be useful for a deeper dive.
+</pre></div>
+
+As your collection of R scripts grows, this command can come in very handy when you are looking for previously written code that you know contains a particular string.
+
+Can you imagine a different way of searching for specific text within your R files? Something like 
+
+1. Open the file in RStudio
+1. use "find" within RStudio to search for a specific string
+
+Suppose you have 100 files to search through. How long would that process take, versus using built in methods within the Unix shell?

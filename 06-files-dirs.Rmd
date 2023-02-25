@@ -1,0 +1,800 @@
+```{r echo=FALSE}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# A set of Unix utilities for files and directories
+This section will cover a set of Unix utilities for managing files and directories.
+
+<b><font color="red">IMPORTANT NOTE:</font> there is no "undelete" in the Unix shell.</b> If you are using a windowing desktop (X-Windows, etc.) with a graphical user interface, there may be a "recycle bin" a part of the interface. But if you are using a standard shell, once you delete a file or folder, it will be immediately and irretrievably erased. For this reason you should use caution in all of your file handling activities.
+
+It is possible to use the option `-i` for deleting files, which prompts for a confirmation before deleting (we actually did this in the setting of aliases)
+
+## Listing files
+We have seen some file listing before, but here we will provide a few more details. To see the options, use
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls --help
+```
+
+<div class="bash"><pre>ufl@nori:~/junk$ ls --help
+Usage: ls [OPTION]... [FILE]...
+List information about the FILEs (the current directory by default).
+Sort entries alphabetically if none of -cftuvSUX nor --sort is specified.
+
+Mandatory arguments to long options are mandatory for short options too.
+  -a, --all                  do not ignore entries starting with .
+  -A, --almost-all           do not list implied . and ..
+      --author               with -l, print the author of each file
+  -b, --escape               print C-style escapes for nongraphic characters
+      --block-size=SIZE      with -l, scale sizes by SIZE when printing them;
+                               e.g., '--block-size=M'; see SIZE format below
+  -B, --ignore-backups       do not list implied entries ending with ~
+  -c                         with -lt: sort by, and show, ctime (time of last
+                               modification of file status information);
+                               with -l: show ctime and sort by name;
+                               otherwise: sort by ctime, newest first
+  -C                         list entries by columns
+      --color[=WHEN]         colorize the output; WHEN can be 'always' (default
+                               if omitted), 'auto', or 'never'; more info below
+  -d, --directory            list directories themselves, not their contents
+  -D, --dired                generate output designed for Emacs' dired mode
+  -f                         do not sort, enable -aU, disable -ls --color
+  -F, --classify             append indicator (one of */=>@|) to entries
+      --file-type            likewise, except do not append '*'
+      --format=WORD          across -x, commas -m, horizontal -x, long -l,
+                               single-column -1, verbose -l, vertical -C
+      --full-time            like -l --time-style=full-iso
+  -g                         like -l, but do not list owner
+      --group-directories-first
+                             group directories before files;
+                               can be augmented with a --sort option, but any
+                               use of --sort=none (-U) disables grouping
+  -G, --no-group             in a long listing, don't print group names
+  -h, --human-readable       with -l and -s, print sizes like 1K 234M 2G etc.
+      --si                   likewise, but use powers of 1000 not 1024
+  -H, --dereference-command-line
+                             follow symbolic links listed on the command line
+      --dereference-command-line-symlink-to-dir
+                             follow each command line symbolic link
+                               that points to a directory
+      --hide=PATTERN         do not list implied entries matching shell PATTERN
+                               (overridden by -a or -A)
+      --hyperlink[=WHEN]     hyperlink file names; WHEN can be 'always'
+                               (default if omitted), 'auto', or 'never'
+      --indicator-style=WORD  append indicator with style WORD to entry names:
+                               none (default), slash (-p),
+                               file-type (--file-type), classify (-F)
+  -i, --inode                print the index number of each file
+  -I, --ignore=PATTERN       do not list implied entries matching shell PATTERN
+  -k, --kibibytes            default to 1024-byte blocks for disk usage;
+                               used only with -s and per directory totals
+  -l                         use a long listing format
+  -L, --dereference          when showing file information for a symbolic
+                               link, show information for the file the link
+                               references rather than for the link itself
+  -m                         fill width with a comma separated list of entries
+  -n, --numeric-uid-gid      like -l, but list numeric user and group IDs
+  -N, --literal              print entry names without quoting
+  -o                         like -l, but do not list group information
+  -p, --indicator-style=slash
+                             append / indicator to directories
+  -q, --hide-control-chars   print ? instead of nongraphic characters
+      --show-control-chars   show nongraphic characters as-is (the default,
+                               unless program is 'ls' and output is a terminal)
+  -Q, --quote-name           enclose entry names in double quotes
+      --quoting-style=WORD   use quoting style WORD for entry names:
+                               literal, locale, shell, shell-always,
+                               shell-escape, shell-escape-always, c, escape
+                               (overrides QUOTING_STYLE environment variable)
+  -r, --reverse              reverse order while sorting
+  -R, --recursive            list subdirectories recursively
+  -s, --size                 print the allocated size of each file, in blocks
+  -S                         sort by file size, largest first
+      --sort=WORD            sort by WORD instead of name: none (-U), size (-S),
+                               time (-t), version (-v), extension (-X)
+      --time=WORD            change the default of using modification times;
+                               access time (-u): atime, access, use;
+                               change time (-c): ctime, status;
+                               birth time: birth, creation;
+                             with -l, WORD determines which time to show;
+                             with --sort=time, sort by WORD (newest first)
+      --time-style=TIME_STYLE  time/date format with -l; see TIME_STYLE below
+  -t                         sort by time, newest first; see --time
+  -T, --tabsize=COLS         assume tab stops at each COLS instead of 8
+  -u                         with -lt: sort by, and show, access time;
+                               with -l: show access time and sort by name;
+                               otherwise: sort by access time, newest first
+  -U                         do not sort; list entries in directory order
+  -v                         natural sort of (version) numbers within text
+  -w, --width=COLS           set output width to COLS.  0 means no limit
+  -x                         list entries by lines instead of by columns
+  -X                         sort alphabetically by entry extension
+  -Z, --context              print any security context of each file
+  -1                         list one file per line.  Avoid '\n' with -q or -b
+      --help     display this help and exit
+      --version  output version information and exit
+
+The SIZE argument is an integer and optional unit (example: 10K is 10*1024).
+Units are K,M,G,T,P,E,Z,Y (powers of 1024) or KB,MB,... (powers of 1000).
+Binary prefixes can be used, too: KiB=K, MiB=M, and so on.
+
+The TIME_STYLE argument can be full-iso, long-iso, iso, locale, or +FORMAT.
+FORMAT is interpreted like in date(1).  If FORMAT is FORMAT1<newline>FORMAT2,
+then FORMAT1 applies to non-recent files and FORMAT2 to recent files.
+TIME_STYLE prefixed with 'posix-' takes effect only outside the POSIX locale.
+Also the TIME_STYLE environment variable sets the default style to use.
+
+Using color to distinguish file types is disabled both by default and
+with --color=never.  With --color=auto, ls emits color codes only when
+standard output is connected to a terminal.  The LS_COLORS environment
+variable can change the settings.  Use the dircolors command to set it.
+
+Exit status:
+ 0  if OK,
+ 1  if minor problems (e.g., cannot access subdirectory),
+ 2  if serious trouble (e.g., cannot access command-line argument).
+
+GNU coreutils online help: <https://www.gnu.org/software/coreutils/>
+Report any translation bugs to <https://translationproject.org/team/>
+Full documentation <https://www.gnu.org/software/coreutils/ls>
+or available locally via: info '(coreutils) ls invocation'</pre></div>
+
+### Different listing options
+After perusing the help for `ls`, try some of the different variants
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd /etc/ssl     # change to some folder
+ls              # basic listing
+ls -1           # one column
+ls -l           # long list
+ls -la          # long list, include "all" = hidden files, sorted by default alphabetically
+ls -ltr         # long list, sorted by date
+ls -ltra        # long list, sorted by date, show hidden
+ls -lh          # long list with human readable file sizes (rather than blocks)
+```
+
+### Listing with wildcards
+Wildcards are special characters that allow matching different patterns. The most common wild card for file listing is the asterisk (`*`), which is short for "any number of any characters" (including no characters). Other wild cards are shown:
+
+* `*`: match any number of any characters
+* `?`: match a single occurrence of any character
+* `[]`: matches any occurrence of characters enclosed in the square brackets.
+
+We will run a few examples within the `/var/log` directory:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd /var/log             # change directories to /var/log
+ls                      # list all files and directories
+```
+
+<div class="bash"><pre>ufl@nori:/var/log$ ls
+alternatives.log       cloud-init.log  faillog         samba
+alternatives.log.1     dist-upgrade    fontconfig.log  sssd
+alternatives.log.2.gz  dmesg           installer       syslog
+apt                    dmesg.0         journal         syslog.1
+auth.log               dmesg.1.gz      kern.log        syslog.2.gz
+auth.log.1             dmesg.2.gz      kern.log.1      syslog.3.gz
+auth.log.2.gz          dmesg.3.gz      kern.log.2.gz   syslog.4.gz
+auth.log.3.gz          dmesg.4.gz      kern.log.3.gz   unattended-upgrades
+auth.log.4.gz          dpkg.log        kern.log.4.gz   wtmp
+bacula                 dpkg.log.1      lastlog         xymon
+bootstrap.log          dpkg.log.2.gz   ntpstats        zabbix-agent
+btmp                   dpkg.log.3.gz   private
+btmp.1                 exim4           puppet
+cloud-init-output.log  fail2ban.log    rstudio
+</pre></div>
+
+Here, list only those files ending with ".log":
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls *.log
+```
+
+<div class="bash"><pre>ufl@nori:/var/log$ ls *.log
+alternatives.log  cloud-init-output.log  fail2ban.log
+auth.log          cloud-init.log         fontconfig.log
+bootstrap.log     dpkg.log               kern.log
+</pre></div>
+
+List those with ".log" followed by any (or zero) other characters
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls *.log*
+```
+
+<div class="bash"><pre>ufl@nori:/var/log$ ls *.log*
+alternatives.log       auth.log.3.gz          dpkg.log.1      kern.log.1
+alternatives.log.1     auth.log.4.gz          dpkg.log.2.gz   kern.log.2.gz
+alternatives.log.2.gz  bootstrap.log          dpkg.log.3.gz   kern.log.3.gz
+auth.log               cloud-init-output.log  fail2ban.log    kern.log.4.gz
+auth.log.1             cloud-init.log         fontconfig.log
+auth.log.2.gz          dpkg.log  </pre></div>
+
+List any files with names containing a "t":
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls *[t]*.*
+```
+
+<div class="bash"><pre>ufl@nori:/var/log$ ls *[t]*.*
+alternatives.log       auth.log.1     bootstrap.log          fontconfig.log
+alternatives.log.1     auth.log.2.gz  btmp.1
+alternatives.log.2.gz  auth.log.3.gz  cloud-init-output.log
+auth.log               auth.log.4.gz  cloud-init.log
+</pre></div>
+
+List any files or directories starting with a "s", then having any character, then a "s", then any number of characters
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls -l -d s?s*       # -l = long list, -d = list directories and not their contents
+```
+
+<div class="bash"><pre>ufl@nori:/var/log$ ls -l -d s?s*
+drwxr-x--- 2 root   root    4096 Feb 22 00:00 sssd
+-rw-r----- 1 syslog adm  2966271 Feb 22 16:43 syslog
+-rw-r----- 1 syslog adm  5235648 Feb 19 00:00 syslog.1
+-rw-r----- 1 syslog adm   333898 Feb 12 00:00 syslog.2.gz
+-rw-r----- 1 syslog adm   265833 Feb  5 00:00 syslog.3.gz
+-rw-r----- 1 syslog adm   304210 Jan 29 00:00 syslog.4.gz
+</pre></div>
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+```
+
+<div class="bash"><pre> </pre></div>
+
+## Create directories
+Let's create a junk directory for sandboxing:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd      # go home
+mkdir junk      # create the junk directory
+ltr             # list files using the alias for long listing by mod time
+```
+
+Here we can see the `junk` folder was created
+
+<div class="bash"><pre>ufl@nori:~$ ltr
+total 57
+drwx------ 2 ufl  ufl     3 Feb 15 13:42 .cache/
+-rw-r--r-- 1 ufl  ufl   220 Feb 17 16:53 .bash_logout
+-rw-r--r-- 1 ufl  ufl  2078 Feb 17 16:53 .kshrc
+-rw-r--r-- 1 ufl  ufl   807 Feb 17 16:53 .profile
+drwxr-xr-x 8 root root    0 Feb 21 15:30 ../
+drwx------ 2 ufl  ufl     4 Feb 21 15:43 .ssh/
+-rw------- 1 ufl  ufl   219 Feb 21 15:45 .bash_history
+drwxrwxr-x 2 ufl  ufl     5 Feb 21 17:13 bin/
+-rw-r--r-- 1 ufl  ufl  4083 Feb 21 17:24 .bashrc
+drwxrwxr-x 2 ufl  ufl     2 Feb 21 18:01 junk/
+drwxr-xr-x 6 ufl  ufl    11 Feb 21 18:01 ./
+</pre></div>
+
+
+## Create and delete files
+Files can be created in many different ways. 
+
+* Files can be copied from other locations within the file system or downloaded from the Internet. 
+* Text files can be created from scratch, or by redirecting output from commands that would typically echo to the terminal.
+* Files can be created from other programs, e.g.,
+    * R to create HTML files from Rmd files
+    * R to create output files as part of a data wrangling or analysis exercise
+    * R to create graphics 
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd junk
+R 
+```
+
+<div class="bash"><pre>ufl@nori:~/junk$ R
+
+R version 4.1.2 (2021-11-01) -- "Bird Hippie"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+</pre></div>
+
+Within R, create a plot
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+png("cars.png")
+plot(cars)
+dev.off()
+q()
+```
+
+<div class="bash"><pre>> png("cars.png")
+plot(cars)
+dev.off()
+q()
+null device
+          1
+</pre></div>
+
+Here we will use WinSCP to log into the server and download the PNG file.
+
+```{r}
+image_link("images/2023-02-21 18_24_27-Login.png")
+```
+
+```{r}
+image_link("images/2023-02-21 18_25_02-junk - ufl@nori - WinSCP.png")
+```
+
+```{r}
+image_link("images/2023-02-21 18_25_09-cars.png - Paint.png")
+```
+
+Now that we have the PNG file, let's delete:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+rm ~/junk/cars.png      # delete a file
+```
+
+Because we set the alias for `rm` (remove file) to `rm -i`, the system asks for confirmation.
+
+<div class="bash"><pre>
+ufl@nori:~/junk$ rm ~/junk/cars.png
+rm: remove regular file '/homes/ufl/junk/cars.png'?
+</pre></div>
+
+There are two options, one is to enter 'y' at the prompt, otherwise the `rm` command could have been run as
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+rm -f ~/junk/cars.png       # force deletion
+```
+
+## Delete directories
+Assuming we are done with the `junk` directory, we can try to delete:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd              # move home
+rmdir junk      # try and delete junk
+```
+
+<div class="bash"><pre>
+ufl@nori:~$ rmdir ~/junk
+rmdir: failed to remove '/homes/ufl/junk': Directory not empty
+</pre></div>
+
+As we can see, the system will not remove directories that have any contents. There are two options: remove the files and then remove the directory, or force the removal. Here we will force removal:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+rm -rf ~/junk     # delete -f = recursive, -f = force
+```
+
+Nothing is printed on standard output, but you can see that the directory is gone:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls -la
+```
+
+<div class="bash"><pre>ufl@nori:~$ ls -la
+total 74
+drwxr-xr-x  5 ufl  ufl    12 Feb 22 15:45 .
+drwxr-xr-x 10 root root    0 Feb 22 11:34 ..
+-rw-------  1 ufl  ufl  4249 Feb 22 15:25 .bash_history
+-rw-r--r--  1 ufl  ufl   220 Feb 17 16:53 .bash_logout
+-rw-r--r--  1 ufl  ufl  4136 Feb 21 18:17 .bashrc
+drwx------  2 ufl  ufl     3 Feb 15 13:42 .cache
+-rw-r--r--  1 ufl  ufl  2078 Feb 17 16:53 .kshrc
+-rw-r--r--  1 ufl  ufl   807 Feb 17 16:53 .profile
+-rw-r--r--  1 ufl  ufl   477 Feb 22 14:58 .screenrc
+drwx------  2 ufl  ufl     4 Feb 21 15:43 .ssh
+-rw-------  1 ufl  ufl   855 Feb 21 18:17 .viminfo
+drwxrwxr-x  2 ufl  ufl     6 Feb 22 08:20 bin
+</pre></div>
+
+## Copy, rename, and move files
+Let's re-create the `junk` directory.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+mkdir ~/junk
+```
+
+We will copy a file into that directory:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cp /etc/motd ~/junk
+```
+
+We will cover listing file contents later but for now we can show what is in the file:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cat ~/junk/motd
+```
+
+<div class="bash"><pre>ufl@nori:~$ cat ~/junk/motd
+2022 ubu22 new NORI
+TODO:
+pull out 4TB SSD set (dont need here)
+rename to nori, reboot
+install splunk client latest
+nfs automount test
+netplan update for 10g uplinks
+
+</pre></div>
+
+Let's rename the file:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd ~/junk       # go into the junk dir
+mv motd msg     # rename with mv = move
+```
+
+... and then list the file ...
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls
+```
+
+<div class="bash"><pre>ufl@nori:~/junk$ ls
+msg</pre></div>
+
+The `mv` command can be used for both moving and renaming files (technically these are the same thing from a Unix perspective). Let's move the file to a different location and give it a new name (use your initials rather than mine).
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+mv msg /tmp/msg_pmh.txt
+```
+
+Within some limitations, copying and moving files and directories can be done in bulk using wildcards as well. Here we will make a junk directory in `/tmp` and then copy with wildcards. Make sure to use your own initials in the code (not "pmh"):
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+mkdir /tmp/junk_pmh                     # make a junk directory
+cp /etc/skel/.ba* /tmp/junk_pmh         # copy with wild card
+ls -ltra /tmp/junk_pmh                  # show my files
+rm -rf /tmp/junk_pmh                    # delete the junk
+```
+
+## Output redirection to files
+When commands are run that print output to the terminal, the output can be redirected to a file rather than to the terminal. Here we will print a calendar for 2023 and redirect its output to `~/junk`. Redirection is specified with the `>` operator.  
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cal 2023 > ~/junk/cal_2023.txt
+```
+
+Nothing is printed on standard output because we have redirected the output to a file. We can look at the file contents, using the `more` command, which prints one screen at a time. To continue printing, tap the ENTER key, and to stop printing, tap the key Q.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+more ~/junk/cal_2023.txt
+```
+
+<div class="bash"><pre>                            2023
+      January               February               March
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+ 1  2  3  4  5  6  7            1  2  3  4            1  2  3  4
+ 8  9 10 11 12 13 14   5  6  7  8  9 10 11   5  6  7  8  9 10 11
+15 16 17 18 19 20 21  12 13 14 15 16 17 18  12 13 14 15 16 17 18
+22 23 24 25 26 27 28  19 20 21 22 23 24 25  19 20 21 22 23 24 25
+29 30 31              26 27 28              26 27 28 29 30 31
+
+
+       April                  May                   June
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+                   1      1  2  3  4  5  6               1  2  3
+ 2  3  4  5  6  7  8   7  8  9 10 11 12 13   4  5  6  7  8  9 10
+ 9 10 11 12 13 14 15  14 15 16 17 18 19 20  11 12 13 14 15 16 17
+16 17 18 19 20 21 22  21 22 23 24 25 26 27  18 19 20 21 22 23 24
+23 24 25 26 27 28 29  28 29 30 31           25 26 27 28 29 30
+30
+
+        July                 August              September
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+                   1         1  2  3  4  5                  1  2
+ 2  3  4  5  6  7  8   6  7  8  9 10 11 12   3  4  5  6  7  8  9
+--More--(63%)
+</pre></div>
+
+If a file already exists, using `>` will overwrite the file contents, whereas `>>` will append. Here we will print two months of 2525 to a file:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+echo $'In the year 2525...\n' > ~/junk/2525.txt
+cal 1 2025 >> ~/junk/2525.txt
+echo $'if man is still alive, if woman can survive, they may find...\n' >> ~/junk/2525.txt
+cal 12 2025 >> ~/junk/2525.txt
+```
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cat ~/junk/2525.txt
+```
+
+<div class="bash"><pre>ufl@nori:~$ cat junk/2525.txt
+In the year 2525...
+
+    January 2025
+Su Mo Tu We Th Fr Sa
+          1  2  3  4
+ 5  6  7  8  9 10 11
+12 13 14 15 16 17 18
+19 20 21 22 23 24 25
+26 27 28 29 30 31
+
+if man is still alive, if woman can survive, they may find...
+
+   December 2025
+Su Mo Tu We Th Fr Sa
+    1  2  3  4  5  6
+ 7  8  9 10 11 12 13
+14 15 16 17 18 19 20
+21 22 23 24 25 26 27
+28 29 30 31
+
+</pre></div>
+
+## `touch`ing a file
+Create
+
+Change access time
+
+Change mod time
+
+## Zipping and unzipping
+Zipping and unzipping can be done at the command line using `zip` and `unzip`. Look at the help for these:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+zip --help
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ zip --help
+Copyright (c) 1990-2008 Info-ZIP - Type 'zip "-L"' for software license.
+Zip 3.0 (July 5th 2008). Usage:
+zip [-options] [-b path] [-t mmddyyyy] [-n suffixes] [zipfile list] [-xi list]
+  The default action is to add or replace zipfile entries from list, which
+  can include the special name - to compress standard input.
+  If zipfile and list are omitted, zip compresses stdin to stdout.
+  -f   freshen: only changed files  -u   update: only changed or new files
+  -d   delete entries in zipfile    -m   move into zipfile (delete OS files)
+  -r   recurse into directories     -j   junk (don't record) directory names
+  -0   store only                   -l   convert LF to CR LF (-ll CR LF to LF)
+  -1   compress faster              -9   compress better
+  -q   quiet operation              -v   verbose operation/print version info
+  -c   add one-line comments        -z   add zipfile comment
+  -@   read names from stdin        -o   make zipfile as old as latest entry
+  -x   exclude the following names  -i   include only the following names
+  -F   fix zipfile (-FF try harder) -D   do not add directory entries
+  -A   adjust self-extracting exe   -J   junk zipfile prefix (unzipsfx)
+  -T   test zipfile integrity       -X   eXclude eXtra file attributes
+  -y   store symbolic links as the link instead of the referenced file
+  -e   encrypt                      -n   don't compress these suffixes
+  -h2  show more help
+</pre></div>
+
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+unzip --help
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ unzip --help
+UnZip 6.00 of 20 April 2009, by Debian. Original by Info-ZIP.
+
+Usage: unzip [-Z] [-opts[modifiers]] file[.zip] [list] [-x xlist] [-d exdir]
+  Default action is to extract files in list, except those in xlist, to exdir;
+  file[.zip] may be a wildcard.  -Z => ZipInfo mode ("unzip -Z" for usage).
+
+  -p  extract files to pipe, no messages     -l  list files (short format)
+  -f  freshen existing files, create none    -t  test compressed archive data
+  -u  update files, create if necessary      -z  display archive comment only
+  -v  list verbosely/show version info       -T  timestamp archive to latest
+  -x  exclude files that follow (in xlist)   -d  extract files into exdir
+modifiers:
+  -n  never overwrite existing files         -q  quiet mode (-qq => quieter)
+  -o  overwrite files WITHOUT prompting      -a  auto-convert any text files
+  -j  junk paths (do not make directories)   -aa treat ALL files as text
+  -U  use escapes for all non-ASCII Unicode  -UU ignore any Unicode fields
+  -C  match filenames case-insensitively     -L  make (some) names lowercase
+  -X  restore UID/GID info                   -V  retain VMS version numbers
+  -K  keep setuid/setgid/tacky permissions   -M  pipe through "more" pager
+  -O CHARSET  specify a character encoding for DOS, Windows and OS/2 archives
+  -I CHARSET  specify a character encoding for UNIX and other archives
+
+See "unzip -hh" or unzip.txt for more help.  Examples:
+  unzip data1 -x joe   => extract all files except joe from zipfile data1.zip
+  unzip -p foo | more  => send contents of foo.zip via pipe into program more
+  unzip -fo foo ReadMe => quietly replace existing ReadMe if archive file newer
+  </pre></div>
+  
+### Zip a file
+Here we will recursively zip the `~/bin` directory and its contents. Note that this method will maintain the structure of the directory; using the `-j` option would zip the files directly into the zip file without maintaining the hierarchical structure.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd                      # move to home dir
+zip -r bin.zip bin/*    # zip recursively into bin.zip all files in the bin directory; preserve structure
+```
+
+The command lists the files as they are being added, along with the compression ratio.
+
+<div class="bash"><pre>ufl@nori:~$ zip -r bin.zip bin/*
+  adding: bin/cal (deflated 65%)
+  adding: bin/nano (deflated 51%)
+  adding: bin/ncal (deflated 65%)
+  adding: bin/tree (deflated 60%)
+</pre></div>
+
+To show the files that are in the zip file, use `unzip -l`
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+unzip -l bin.zip        # -l = "list"
+```
+
+<div class="bash"><pre>ufl@nori:~$ unzip -l bin.zip
+Archive:  bin.zip
+  Length      Date    Time    Name
+---------  ---------- -----   ----
+    37832  2023-02-21 16:03   bin/cal
+   283144  2023-02-21 17:11   bin/nano
+    37832  2023-02-21 16:15   bin/ncal
+    81288  2023-02-22 08:49   bin/tree
+---------                     -------
+   440096                     4 files</pre></div>
+
+Now we can unzip those to an arbitrary location in `/tmp`; again, make sure to use your own initials for this:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+unzip -d /tmp/bin_pmh bin.zip       -d = directory to unzip to; will create if it can
+```
+
+<div class="bash"><pre>ufl@nori:~$ unzip -d /tmp/bin_pmh bin.zip
+Archive:  bin.zip
+  inflating: /tmp/bin_pmh/bin/cal
+  inflating: /tmp/bin_pmh/bin/nano
+  inflating: /tmp/bin_pmh/bin/ncal
+  inflating: /tmp/bin_pmh/bin/tree
+</pre></div>
+
+We can now list the unzipped files. 
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ls -lR /tmp/bin_pmh/        # -R = list files recursively 
+```
+
+Here we are recursively listing the directory, which first shows the contents of the directory we are listing (i.e., contents = directory `bin`), and then the contents of any subdirectories.
+
+<div class="bash"><pre>
+ufl@nori:~$ ls -lR /tmp/bin_pmh/
+/tmp/bin_pmh/:
+total 4
+drwxrwxr-x 2 ufl ufl 4096 Feb 22 19:48 bin
+
+/tmp/bin_pmh/bin:
+total 440
+-rwxr-xr-x 1 ufl ufl  37832 Feb 21 16:03 cal
+-rwxr-xr-x 1 ufl ufl 283144 Feb 21 17:11 nano
+-rwxr-xr-x 1 ufl ufl  37832 Feb 21 16:15 ncal
+-rwxr-xr-x 1 ufl ufl  81288 Feb 22 08:49 tree
+</pre></div>
+
+## Symbolic linking
+Symbolic links (also known as symlinks) are "pointers"--they are files that are created that point to a "target" that is another file or directory in the file system. For nearly all Unix processes, a symlink can be used in place of the actual target. The syntax is
+
+```
+ln -s target_path link_path
+```
+
+where `target_path` is the object to be pointed tom and `link_path` is the link or shortcut. 
+
+Symlinks can be created so that a single directory can contain similar objects even though the actual targets are in different locations in the file system. 
+
+For example, suppose you created a data set for a study with one directory for each subject. The structure of each directory is designed to be identical, even thought the content of the files may be different. Suppose the main files within each folder contain the records of self-measured daily blood pressure, self-reported anxiety, and hours worked per day. If you have a number of analyses to perform on these files, one approach would be to write a program that loops over the set of directories and performs some set of processes. Here is a diagram of the file system layout:
+
+```
+├── s01
+│   ├── bp.csv
+│   ├── anx.csv
+│   └── hrs.csv
+├── s02
+│   ├── bp.csv
+│   ├── anx.csv
+│   └── hrs.csv
+├── ...
+```
+
+A different approach would be to create a directory containing a set of symbolic links, e.g., 
+
+```
+├── s01_bp.csv -> ../s01/bp.csv
+├── s02_bp.csv -> ../s02/bp.csv
+├── s03_bp.csv -> ../s03/bp.csv
+```
+
+This arrangement of symbolic links would take some work to set up (which could be done programatically or with some clever use of shell commands), but would confer some benefits:
+
+1. Each file would be named with the subject identifier
+1. All files would be in the same directory, reducing programming necessary to loop over a set of directories containing the files
+1. The total file size and count of lines could be easily determined
+1. A zip file could be created easily for sharing with other researchers
+
+Here we will create a new directory and then create a symbolic link to an existing file.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+mkdir ~/unixshell                                       # make a new directory within home
+ln -s ../junk/cal_2023.txt ~/unixshell/cal_2023.txt     # create the symbolic link
+```
+
+The `ln -s` command specifies the target location relative to the link. In this case the link is `~/unixshell/cal_2023.txt` and the target is one directory level up (`..`), then down into `junk`, and the linked file is cal_2023.txt.
+
+Let's look at the structure of the file system
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ll ~/unixshell/     # long listing of contents of ~/unixshell
+```
+
+<div class="bash"><pre>
+ufl@nori:~$ ll ~/unixshell/
+total 61034
+drwxrwxr-x 2 ufl ufl        4 Feb 22 20:29 ./
+drwxr-xr-x 7 ufl ufl       16 Feb 22 19:52 ../
+lrwxrwxrwx 1 ufl ufl       20 Feb 22 20:29 cal_2023.txt -> ../junk/cal_2023.txt
+</pre></div>
+
+The long listing shows that the file `~/unixshell/cal_2023.txt` is a pointer to the file at the relative path `../junk/cal_2023.txt`.
+
+Let's look at the contents of the symlinked file.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cat ~/unixshell/cal_2023.txt
+```
+
+The contents of the target and the link are identical.
+
+<div class="bash"><pre>ufl@nori:~$ cat ~/unixshell/cal_2023.txt
+                            2023
+      January               February               March
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+ 1  2  3  4  5  6  7            1  2  3  4            1  2  3  4
+ 8  9 10 11 12 13 14   5  6  7  8  9 10 11   5  6  7  8  9 10 11
+15 16 17 18 19 20 21  12 13 14 15 16 17 18  12 13 14 15 16 17 18
+22 23 24 25 26 27 28  19 20 21 22 23 24 25  19 20 21 22 23 24 25
+29 30 31              26 27 28              26 27 28 29 30 31
+
+
+       April                  May                   June
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+                   1      1  2  3  4  5  6               1  2  3
+ 2  3  4  5  6  7  8   7  8  9 10 11 12 13   4  5  6  7  8  9 10
+ 9 10 11 12 13 14 15  14 15 16 17 18 19 20  11 12 13 14 15 16 17
+16 17 18 19 20 21 22  21 22 23 24 25 26 27  18 19 20 21 22 23 24
+23 24 25 26 27 28 29  28 29 30 31           25 26 27 28 29 30
+30
+
+        July                 August              September
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+                   1         1  2  3  4  5                  1  2
+ 2  3  4  5  6  7  8   6  7  8  9 10 11 12   3  4  5  6  7  8  9
+ 9 10 11 12 13 14 15  13 14 15 16 17 18 19  10 11 12 13 14 15 16
+16 17 18 19 20 21 22  20 21 22 23 24 25 26  17 18 19 20 21 22 23
+23 24 25 26 27 28 29  27 28 29 30 31        24 25 26 27 28 29 30
+30 31
+
+      October               November              December
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+ 1  2  3  4  5  6  7            1  2  3  4                  1  2
+ 8  9 10 11 12 13 14   5  6  7  8  9 10 11   3  4  5  6  7  8  9
+15 16 17 18 19 20 21  12 13 14 15 16 17 18  10 11 12 13 14 15 16
+22 23 24 25 26 27 28  19 20 21 22 23 24 25  17 18 19 20 21 22 23
+29 30 31              26 27 28 29 30        24 25 26 27 28 29 30
+                                            31
+</pre></div>

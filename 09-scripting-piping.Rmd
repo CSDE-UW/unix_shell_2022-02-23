@@ -1,0 +1,222 @@
+```{r echo=FALSE}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# Custom commands with pipelines and shell scripting
+
+## Pipelines
+We have looked at a few uses of pipelines previously. Here is a nice example from Wikipedia that includes several commands that we will not cover in this workshop:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+curl "https://en.wikipedia.org/wiki/Pipeline_(Unix)" |
+sed 's/[^a-zA-Z ]/ /g' |
+tr 'A-Z ' 'a-z\n' |
+grep '[a-z]' |
+sort -u |
+comm -23 - <(sort /usr/share/dict/words) |
+less
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ curl "https://en.wikipedia.org/wiki/Pipeline_(Unix)" |
+sed 's/[^a-zA-Z ]/ /g' |
+tr 'A-Z ' 'a-z\n' |
+grep '[a-z]' |
+sort -u |
+comm -23 - <(sort /usr/share/dict/words) |
+less
+aa
+abook
+aboutsite
+accessdate
+accesskey
+ae
+af
+afe
+ais
+ajournal
+akev
+amtx
+anoncontribs
+anontalk
+aofi
+api
+apipeline
+april
+ascii
+asid
+async
+atitle
+au
+</pre></div>
+
+The explanation:
+
+1. curl obtains the HTML contents of a web page (could use wget on some systems).
+1. sed replaces all characters (from the web page's content) that are not spaces or letters, with spaces. (Newlines are preserved.)
+1. tr changes all of the uppercase letters into lowercase and converts the spaces in the lines of text to newlines (each 'word' is now on a separate line).
+1. grep includes only lines that contain at least one lowercase alphabetical character (removing any blank lines).
+1. sort sorts the list of 'words' into alphabetical order, and the -u switch removes duplicates.
+1. comm finds lines in common between two files, -23 suppresses lines unique to the second file, and those that are common to both, leaving only those that are found only in the first file named. The - in place of a file name causes comm to use its standard input (from the pipe line in this case). sort /usr/share/dict/words sorts the contents of the words file alphabetically, as comm expects, and <( ... ) outputs the results to a temporary file (via process substitution), which comm reads. The result is a list of words (lines) that are not found in /usr/share/dict/words.
+1. less allows the user to page through the results.
+
+A more pertinent and realistic example uses a pipeline to find any R scripts (R or Rmd) containing a specific string "agd" (a type of file generated during studies using body-worn Actigraph accelerometers). The `sed` command takes as input the list of R and Rmd files and adds quotes (to handle files that have spaces in the path or file name). The final part of the command uses `xargs` to perform a case-insensitive search for any of those files containing the string "agd"
+
+```
+find -L `pwd` \( -iname "*.R" -o -iname "*.Rmd" \) | sed "s|\(.*\)|\"\1\"|" | xargs grep -i agd
+```
+
+## Using the shell as a scripting environment
+There are many online tutorials for bash shell scripting, so we will spend little time here on the topic. A few examples will be presented.
+
+The previous `find` example can be made more generic as a shell script. The script is named `finder.sh`. The contents of the script are:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+#! /bin/bash
+# a find utility for R scripts
+find -L `pwd` \( -iname "*.R" -o -iname "*.Rmd" \) | sed "s|\(.*\)|\"\1\"|" | xargs grep -i $1
+```
+
+The first line `#! /bin/bash` instructs the shell to run the script through the bash shell processor. The second line is a simple comment. The third line is identical to the previous `find` example with the exception that instead of hard-coding the string to search for ("agd" in the example), there is `$1`, which indicates an argument to be entered at the command line.
+
+This example is a demonstration run on the CSDE terminal server with the GNU/Linux emulator for Windows [Cygwin](https://www.cygwin.com/)
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+~/h/projects/siddhis        # change working directory to a project I am working on with a PhD student
+finder sedentary            # run the custom command
+```
+
+The command then prints the file name and the string matching line for all *.R and *.Rmd files in the project folder that contain the string "sedentary". This is far more efficient than doing a needle-in-haystack approach of opening files one at a time to search for strings.
+
+<div class="bash"><pre>phurvitz@SIM2 ~/h/projects/siddhis
+$ finder sedentary
+/home/phurvitz/h/projects/siddhis/S01/S01_RCode_07132022.Rmd:    addCircleMarkers(data = ll_10001_baseline_stride$sedentary, radius =4,
+/home/phurvitz/h/projects/siddhis/S01/S01_RCode_07132022.Rmd:                     group = "sedentary") %>%
+/home/phurvitz/h/projects/siddhis/S01/S01_RCode_07132022.Rmd:        overlayGroups = c("sedentary", "low", "moderate", "high"),
+/home/phurvitz/h/projects/siddhis/S01/S01_RCode_20220801.Rmd:# distance to home bins, steps not sedentary
+/home/phurvitz/h/projects/siddhis/S01/S01_RCode_20220801.Rmd:# distance to home bins, steps not sedentary
+/home/phurvitz/h/projects/siddhis/S01/S01_RCode_20220801.Rmd:        data = lldat_stride$sedentary, radius = 4,
+/home/phurvitz/h/projects/siddhis/S01/S01_RCode_20220801.Rmd:        group = "sedentary"
+/home/phurvitz/h/projects/siddhis/S01/S01_RCode_20220801.Rmd:        overlayGroups = c("sedentary", "low", "moderate", "high"),
+/home/phurvitz/h/projects/siddhis/S01/tools/sw.R:            breaks = c(-Inf, 0, 30, 60, Inf), labels = c("sedentary", "low", "moderate", "high")
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_07132022.Rmd:    addCircleMarkers(data = ll_10001_baseline_stride$sedentary, radius =4,
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_07132022.Rmd:                     group = "sedentary") %>%
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_07132022.Rmd:        overlayGroups = c("sedentary", "low", "moderate", "high"),
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20220801.Rmd:# distance to home bins, steps not sedentary
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20220801.Rmd:# distance to home bins, steps not sedentary
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20220801.Rmd:        data = lldat_stride$sedentary, radius = 4,
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20220801.Rmd:        group = "sedentary"
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20220801.Rmd:        overlayGroups = c("sedentary", "low", "moderate", "high"),
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20230106.Rmd:# distance to home bins, steps not sedentary
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20230106.Rmd:# distance to home bins, steps not sedentary
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20230106.Rmd:        data = lldat_stride$sedentary, radius = 4,
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20230106.Rmd:        group = "sedentary"
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/S01_RCode_20230106.Rmd:        overlayGroups = c("sedentary", "low", "moderate", "high"),
+/home/phurvitz/h/projects/siddhis/S01_20230106/S01_copy/tools/sw.R:            breaks = c(-Inf, 0, 30, 60, Inf), labels = c("sedentary", "low", "moderate", "high")
+/home/phurvitz/h/projects/siddhis/S02/S02_RCode_20230106.Rmd:# distance to home bins, steps not sedentary
+/home/phurvitz/h/projects/siddhis/S02/S02_RCode_20230106.Rmd:# distance to home bins, steps not sedentary
+/home/phurvitz/h/projects/siddhis/S02/S02_RCode_20230106.Rmd:        data = lldat_stride$sedentary, radius = 4,
+/home/phurvitz/h/projects/siddhis/S02/S02_RCode_20230106.Rmd:        group = "sedentary"
+/home/phurvitz/h/projects/siddhis/S02/S02_RCode_20230106.Rmd:        overlayGroups = c("sedentary", "low", "moderate", "high"),
+/home/phurvitz/h/projects/siddhis/sw_gps.Rmd:        data = ll_10001_baseline_stride$sedentary, radius = 4,
+/home/phurvitz/h/projects/siddhis/sw_gps.Rmd:        group = "sedentary"
+/home/phurvitz/h/projects/siddhis/sw_gps.Rmd:        overlayGroups = c("sedentary", "low", "moderate", "high"),
+/home/phurvitz/h/projects/siddhis/tools/sw.R:            labels = c("sedentary", "low", "moderate", "high")
+</pre></div>
+
+For your enjoyment, here is a script that I have running daily at 08:00. It will generate an e-mail message to UWDC users informing them one week in advance about monthly server maintenance down time. See if you can determine what the script does!
+
+```
+#!/bin/bash
+
+: '
+Phil Hurvitz, phurvitz@uw.edu
+use with crontab, e.g.,
+0 3 * * * /rc00/d03/phurvitz/dcollab/maintenance.sh
+
+Send mail on the 2nd Friday notifying UWDC users about maintenance on the 3rd Friday
+'
+
+# today's calendar date
+# this failed on 08 as a string due to some odd octal stuff
+#Today=$(date +%d)
+# so this worked (dropped the leading zero and adds a space pad instead)
+Today=$(date +%e)
+# this also worked, grabs the 3rd column
+#Today=`date | awk -F ' ' '{print $3}'`
+#echo "$Today"
+Tomorrow=$(($Today + 1))
+
+Month=$(cal | head -1 | awk '{ print $1 }')
+Year=$(cal | head -1 | awk '{ print $2 }')
+
+# the first awk drops the last 3 characters of each cal line
+# the grep "\S" drops lines that are empty or just spaces
+# the second awk gets the 16th & 17th characters (the Fridays)
+# the head | tail gets the 2nd or 3rd Friday
+SecondFriday=$(cal | awk  '{print substr($0, 1, length($0)-3)}' | grep "\S" | awk -F "" {'print $16$17'} | head -4 | tail -1)
+#SecondFriday=$(cal | awk '{if (NR!=1) {print}}' | awk -F "" {'print $16$17'} | head -3 | tail -1)
+#SecondThursday=$(($SecondFriday-1))
+ThirdFriday=$(cal | awk  '{print substr($0, 1, length($0)-3)}' | grep "\S" | awk -F "" {'print $16$17'} | head -5 | tail -1)
+#ThirdFriday=$(cal | awk '{if (NR!=1) {print}}' | awk -F "" {'print $16$17'} | head -4 | tail -1)
+#ThirdThursday=$(($ThirdFriday-1))
+
+# message
+EMAILMESSAGE="Dear UW Data Collaborative user,
+
+This is an automated message from CSDE IT support.
+
+In one week, on the third Friday of the month ($Month $ThirdFriday, $Year), the UWDC Enclave servers will be offline for maintenance between 07:00 and 12:00. They will be unavailable during that time.
+
+If you have long-running jobs, please consider this schedule when starting those jobs. Because maintenance includes critical operating system and security updates, we need to stick to this schedule and cannot accommodate exceptions.
+
+If maintenance takes longer than expected, we will notify you by e-mail. You will also be notified when maintenance is completed.
+
+Sorry for any inconvenience and thanks for your cooperation.
+
+
+CSDE Computing"
+
+
+# e-mail subject
+SUBJECT="UWDC Enclave servers will be down for maintenance in one week: $Month $ThirdFriday, $Year 07:00-12:00"
+
+# e-mail recipient
+TOEMAIL="dcollab-users@uw.edu"
+#TOEMAIL="phurvitz@uw.edu"
+
+# e-mail from
+FROM="CSDE Computing Core <csde_help@uw.edu>"
+
+if [ "$Today" -ne "$SecondFriday" ]
+then
+# uncomment the next line if daily e-mails are wanted
+    # echo "Today ($Today) is not the second Friday ($SecondFriday)"
+    #echo "Tomrrow ($Tomorrow) is not the second Friday ($SecondFriday)"
+#    echo "E-mail to: $TOEMAIL"
+#    echo "Subject: $SUBJECT"
+#    echo "Message: $EMAILMESSAGE"
+    exit 1
+fi
+
+# if we got here then today is the second Friday and the message will be sent out.
+# comment/uncomment for testing
+#exit;
+
+
+echo "$EMAILMESSAGE" | /bin/mail -s "$SUBJECT" -r "$FROM" "$TOEMAIL"
+```
+

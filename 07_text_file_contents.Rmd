@@ -1,0 +1,478 @@
+```{r echo=FALSE}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# Text files: displaying and processing
+The *lingua franca* of data is the CSV file, which is a text file. Programs in various languages are written and stored in text files. Additionally, most of the configuration files for Unix are also stored in text files. For these and other reasons, handling text files is important. In this section we will cover a number of different text file utilities.
+
+## Download a working file
+Here we will download and unzip a large CSV file for some text processing. We will use the [`wget`](https://www.gnu.org/software/wget/) command to download a single file. The `-nd` and `-np` options specify not to download directories and not to download and "parent" files (i.e., do not ascend into the parent directories).
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd unixshell/       # change to the dir we want to work in 
+wget -nd -np https://github.com/datablist/sample-csv-files/raw/main/files/organizations/organizations-2000000.zip       # download
+```
+
+<div class="bash"><pre>ufl@nori:~$ cd unixshell/
+ufl@nori:~/unixshell$ wget -nd -np https://github.com/datablist/sample-csv-files/raw/main/files/organizations/organizations-2000000.zip
+--2023-02-22 21:20:34--  https://github.com/datablist/sample-csv-files/raw/main/files/organizations/organizations-2000000.zip
+Resolving github.com (github.com)... 192.30.255.113
+Connecting to github.com (github.com)|192.30.255.113|:443... connected.
+HTTP request sent, awaiting response... 302 Found
+Location: https://media.githubusercontent.com/media/datablist/sample-csv-files/main/files/organizations/organizations-2000000.zip [following]
+--2023-02-22 21:20:34--  https://media.githubusercontent.com/media/datablist/sample-csv-files/main/files/organizations/organizations-2000000.zip
+Resolving media.githubusercontent.com (media.githubusercontent.com)... 185.199.110.133, 185.199.108.133, 185.199.109.133, ...
+Connecting to media.githubusercontent.com (media.githubusercontent.com)|185.199.110.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 62374840 (59M) [application/zip]
+Saving to: ‘organizations-2000000.zip’
+
+organizations-20000 100%[===================>]  59.48M  43.7MB/s    in 1.4s
+
+2023-02-22 21:20:39 (43.7 MB/s) - ‘organizations-2000000.zip’ saved [62374840/62374840]
+</pre></div>
+
+Next we will unzip the file
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+unzip organizations-2000000.zip
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ unzip organizations-2000000.zip
+Archive:  organizations-2000000.zip
+ bunzipping: organizations-2000000.csv
+</pre></div>
+
+## Counting lines or words in files with `wc`
+The file we downloaded supposedly has 2,000,000 lines. How can we be sure? Use the `wc` (word count) command, which will count newline, word, character, byte, maximum line length for a file. It is worth looking at the help for the command:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+wc --help
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ wc --help
+Usage: wc [OPTION]... [FILE]...
+  or:  wc [OPTION]... --files0-from=F
+Print newline, word, and byte counts for each FILE, and a total line if
+more than one FILE is specified.  A word is a non-zero-length sequence of
+characters delimited by white space.
+
+With no FILE, or when FILE is -, read standard input.
+
+The options below may be used to select which counts are printed, always in
+the following order: newline, word, character, byte, maximum line length.
+  -c, --bytes            print the byte counts
+  -m, --chars            print the character counts
+  -l, --lines            print the newline counts
+      --files0-from=F    read input from the files specified by
+                           NUL-terminated names in file F;
+                           If F is - then read names from standard input
+  -L, --max-line-length  print the maximum display width
+  -w, --words            print the word counts
+      --help     display this help and exit
+      --version  output version information and exit
+</pre></div>
+
+Here we will count all statistics for the file:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+wc -wcmlL organizations-2000000.csv
+```
+
+As stated in the help file, the output shows in order: newline, word, character, byte, maximum line length, so there are indeed 2,000,001 lines (2 million data plus one header line):
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ wc -wcmlL organizations-2000000.csv
+  2000001  13157893 283437682 283437682       241 organizations-2000000.csv
+</pre></div>
+
+## First or last n lines with `head` and `tail`
+Before doing anything with a text file, one should know about its structure. Think about this 284 MB CSV file we just downloaded. There are a few different ways you could discover the structure and general contents of the file:
+
+* Use Excel to open the file
+* Use R with something like `read.csv(..., nrows = 6)`
+
+The down sides to using Excel are (1) a large file may simply not open, or it might take a long time to open; (2) Excel may reformat data as it tries to guess the data type of the columns.
+
+The R method is more appropriate for a large file since it has the option of only reading part of the file. However, it does require you to start R and then to enter the code for reading in the CSV file.
+
+Within Unix we can easily look at the first few or the last few lines of any text file. Here we print the first two lines, which shows the header line as well as the first line of data
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+head -2 organizations-2000000.csv
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ head -2 organizations-2000000.csv
+Index,Organization Id,Name,Website,Country,Description,Founded,Industry,Number of employees
+1,391dAA77fea9EC1,Daniel-Mcmahon,https://stuart-rios.biz/,Cambodia,Focused eco-centric help-desk,2013,Sports,1878
+</pre></div>
+
+... and the last 5 lines:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+tail -5 !$
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ tail -5 !$
+tail -5 organizations-2000000.csv
+1999996,CcFEeC1CCC1C5C1,"Weaver, Ashley and Sanders",https://may.com/,Cayman Islands,Cross-platform cohesive benchmark,2003,Staffing / Recruiting,7669
+1999997,F15fcda744cBBbf,"Orr, Pruitt and Kramer",https://jennings-dickson.com/,Taiwan,Synergistic needs-based utilization,1980,Financial Services,3532
+1999998,D5AfEEC1f61AC33,Vance-Farrell,http://www.chambers.com/,Dominica,Pre-emptive full-range neural-net,1985,Civic / Social Organization,5519
+1999999,bf976AdbfcF7fAd,"Brennan, Morgan and Chase",https://chaney-oconnor.com/,Italy,Networked zero tolerance support,1981,Construction,4425
+2000000,59bF9e17EfBbbaE,Hoffman Ltd,https://www.simpson.org/,Russian Federation,Future-proofed homogeneous installation,2002,Government Relations,2271
+</pre></div>
+
+## Printing with `cat`
+`cat` (con_cat_enate) is the simplest text file printing command. It simply streams the contents of the file to the terminal's standard output.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cat ~/unixshell/cal_2023.txt
+```
+
+<div class="bash"><pre>ufl@nori:~$ cat ~/unixshell/cal_2023.txt
+                            2023
+      January               February               March
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+ 1  2  3  4  5  6  7            1  2  3  4            1  2  3  4
+ 8  9 10 11 12 13 14   5  6  7  8  9 10 11   5  6  7  8  9 10 11
+15 16 17 18 19 20 21  12 13 14 15 16 17 18  12 13 14 15 16 17 18
+22 23 24 25 26 27 28  19 20 21 22 23 24 25  19 20 21 22 23 24 25
+29 30 31              26 27 28              26 27 28 29 30 31
+
+
+       April                  May                   June
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+                   1      1  2  3  4  5  6               1  2  3
+ 2  3  4  5  6  7  8   7  8  9 10 11 12 13   4  5  6  7  8  9 10
+ 9 10 11 12 13 14 15  14 15 16 17 18 19 20  11 12 13 14 15 16 17
+16 17 18 19 20 21 22  21 22 23 24 25 26 27  18 19 20 21 22 23 24
+23 24 25 26 27 28 29  28 29 30 31           25 26 27 28 29 30
+30
+
+        July                 August              September
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+                   1         1  2  3  4  5                  1  2
+ 2  3  4  5  6  7  8   6  7  8  9 10 11 12   3  4  5  6  7  8  9
+ 9 10 11 12 13 14 15  13 14 15 16 17 18 19  10 11 12 13 14 15 16
+16 17 18 19 20 21 22  20 21 22 23 24 25 26  17 18 19 20 21 22 23
+23 24 25 26 27 28 29  27 28 29 30 31        24 25 26 27 28 29 30
+30 31
+
+      October               November              December
+Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+ 1  2  3  4  5  6  7            1  2  3  4                  1  2
+ 8  9 10 11 12 13 14   5  6  7  8  9 10 11   3  4  5  6  7  8  9
+15 16 17 18 19 20 21  12 13 14 15 16 17 18  10 11 12 13 14 15 16
+22 23 24 25 26 27 28  19 20 21 22 23 24 25  17 18 19 20 21 22 23
+29 30 31              26 27 28 29 30        24 25 26 27 28 29 30
+                                            31
+</pre></div>
+
+One of the best features of `cat` is printing line numbers:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cat -n ~/unixshell/cal_2023.txt     # -n = line numbers
+```
+
+<div class="bash"><pre>ufl@nori:~$ cat -n ~/unixshell/cal_2023.txt
+     1                              2023
+     2        January               February               March
+     3  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+     4   1  2  3  4  5  6  7            1  2  3  4            1  2  3  4
+     5   8  9 10 11 12 13 14   5  6  7  8  9 10 11   5  6  7  8  9 10 11
+     6  15 16 17 18 19 20 21  12 13 14 15 16 17 18  12 13 14 15 16 17 18
+     7  22 23 24 25 26 27 28  19 20 21 22 23 24 25  19 20 21 22 23 24 25
+     8  29 30 31              26 27 28              26 27 28 29 30 31
+     9
+    10
+    11         April                  May                   June
+    12  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+    13                     1      1  2  3  4  5  6               1  2  3
+    14   2  3  4  5  6  7  8   7  8  9 10 11 12 13   4  5  6  7  8  9 10
+    15   9 10 11 12 13 14 15  14 15 16 17 18 19 20  11 12 13 14 15 16 17
+    16  16 17 18 19 20 21 22  21 22 23 24 25 26 27  18 19 20 21 22 23 24
+    17  23 24 25 26 27 28 29  28 29 30 31           25 26 27 28 29 30
+    18  30
+    19
+    20          July                 August              September
+    21  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+    22                     1         1  2  3  4  5                  1  2
+    23   2  3  4  5  6  7  8   6  7  8  9 10 11 12   3  4  5  6  7  8  9
+    24   9 10 11 12 13 14 15  13 14 15 16 17 18 19  10 11 12 13 14 15 16
+    25  16 17 18 19 20 21 22  20 21 22 23 24 25 26  17 18 19 20 21 22 23
+    26  23 24 25 26 27 28 29  27 28 29 30 31        24 25 26 27 28 29 30
+    27  30 31
+    28
+    29        October               November              December
+    30  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+    31   1  2  3  4  5  6  7            1  2  3  4                  1  2
+    32   8  9 10 11 12 13 14   5  6  7  8  9 10 11   3  4  5  6  7  8  9
+    33  15 16 17 18 19 20 21  12 13 14 15 16 17 18  10 11 12 13 14 15 16
+    34  22 23 24 25 26 27 28  19 20 21 22 23 24 25  17 18 19 20 21 22 23
+    35  29 30 31              26 27 28 29 30        24 25 26 27 28 29 30
+    36                                              31
+</pre></div>
+
+`cat` can also print multiple files by specifying them in the same command
+
+Here is an example of printing two files with line numbers and redirecting output:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ cat -n  ~/junk/2525.txt ~/junk/cal_2023.txt > ~/junk/cals
+```
+
+Let's look at the first few lines:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+head -3 ~/junk/cals
+```
+
+<div class="bash"><pre>ufl@nori:~$ head -3 ~/junk/cals
+     1  In the year 2525...
+     2
+     3      January 2025
+</pre></div>
+
+And the last few lines:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+tail -4 !$      # remember that !$ is the last word entered on the previous command.
+```
+
+<div class="bash"><pre>ufl@nori:~$ tail -4 !$
+tail -4 ~/junk/cals
+    53  15 16 17 18 19 20 21  12 13 14 15 16 17 18  10 11 12 13 14 15 16
+    54  22 23 24 25 26 27 28  19 20 21 22 23 24 25  17 18 19 20 21 22 23
+    55  29 30 31              26 27 28 29 30        24 25 26 27 28 29 30
+    56                                              31
+
+</pre></div>
+
+But one of the problems with `cat` is that it prints everything at once. We can use one of the built in features of Unix that was previously mentioned: "Programs in the Unix shell are usually designed to work together, so that output from one command can act as input to another command."
+
+Here we will print the file with line numbers, but "pipe" that through the `more` command to see one screen full at a time. The first part of the command (`cat -n`) generates some output, which is combined with the the `more` command using the vertical bar. As the data streams from the `cat` command, it is ingested by `more`, which displays only one screen at a time. We will look at more examples of Unix pipelines later.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cat -n ~/junk/cal_2023.txt | more
+```
+
+<div class="bash"><pre>ufl@nori:~$ cat -n ~/junk/cal_2023.txt | more
+     1                              2023
+     2        January               February               March
+     3  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+     4   1  2  3  4  5  6  7            1  2  3  4            1  2  3  4
+     5   8  9 10 11 12 13 14   5  6  7  8  9 10 11   5  6  7  8  9 10 11
+     6  15 16 17 18 19 20 21  12 13 14 15 16 17 18  12 13 14 15 16 17 18
+     7  22 23 24 25 26 27 28  19 20 21 22 23 24 25  19 20 21 22 23 24 25
+     8  29 30 31              26 27 28              26 27 28 29 30 31
+     9
+    10
+    11         April                  May                   June
+    12  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+    13                     1      1  2  3  4  5  6               1  2  3
+    14   2  3  4  5  6  7  8   7  8  9 10 11 12 13   4  5  6  7  8  9 10
+    15   9 10 11 12 13 14 15  14 15 16 17 18 19 20  11 12 13 14 15 16 17
+    16  16 17 18 19 20 21 22  21 22 23 24 25 26 27  18 19 20 21 22 23 24
+    17  23 24 25 26 27 28 29  28 29 30 31           25 26 27 28 29 30
+    18  30
+    19
+    20          July                 August              September
+    21  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+    22                     1         1  2  3  4  5                  1  2
+    23   2  3  4  5  6  7  8   6  7  8  9 10 11 12   3  4  5  6  7  8  9
+--More--
+</pre></div>
+
+## Printing with `more`, and `less` (one screen at a time)
+Both `more` and `less` will print only one screen of text at a time. We saw the use of `more` previously. `less` has more features, such as moving both forward and backward and line numbering. First, copy the `less` command to your `~/bin` directory.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cp ~phurvitz/unixshell/less ~/bin
+``` 
+
+Then use the command
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+less -N ~/unixshell/cal_2023.txt        # print one screen at a time with line numbers
+```
+
+<div class="bash"><pre>ufl@nori:~$ less -N ~/unixshell/cal_2023.txt
+      1                             2023
+      2       January               February               March
+      3 Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+      4  1  2  3  4  5  6  7            1  2  3  4            1  2  3  4
+      5  8  9 10 11 12 13 14   5  6  7  8  9 10 11   5  6  7  8  9 10 11
+      6 15 16 17 18 19 20 21  12 13 14 15 16 17 18  12 13 14 15 16 17 18
+      7 22 23 24 25 26 27 28  19 20 21 22 23 24 25  19 20 21 22 23 24 25
+      8 29 30 31              26 27 28              26 27 28 29 30 31
+      9
+     10
+     11        April                  May                   June
+     12 Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+     13                    1      1  2  3  4  5  6               1  2  3
+     14  2  3  4  5  6  7  8   7  8  9 10 11 12 13   4  5  6  7  8  9 10
+     15  9 10 11 12 13 14 15  14 15 16 17 18 19 20  11 12 13 14 15 16 17
+     16 16 17 18 19 20 21 22  21 22 23 24 25 26 27  18 19 20 21 22 23 24
+     17 23 24 25 26 27 28 29  28 29 30 31           25 26 27 28 29 30
+     18 30
+     19
+     20         July                 August              September
+     21 Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa  Su Mo Tu We Th Fr Sa
+     22                    1         1  2  3  4  5                  1  2
+     23  2  3  4  5  6  7  8   6  7  8  9 10 11 12   3  4  5  6  7  8  9
+/homes/ufl/unixshell/cal_2023.txt
+</pre></div>
+
+Use the Page UP and Page Down or the up and down keys on the keyboard to move forward or backward, and type `Q` to exit.
+
+`more` and `less` are very useful when you have large files but you only want to see part of the file, but typically more than with `head` or `tail`.
+
+## Printing a specific line with `sed`
+Sometimes processing of data fails due to strange characters within the file. It is possible to print a single line from a file using the line number. Here we will use the _s_tream _ed_itor `sed` to print the 2000th line:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+sed -n 2000p organizations-2000000.csv
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ sed -n 2000p organizations-2000000.csv
+1999,088f75735fa1FF5,Francis Ltd,https://stephens-mcclure.biz/,Holy See (Vatican City State),Profit-focused composite pricing structure,1971,Food Production,901
+ufl@nori:~/unixshell$
+</pre></div>
+
+We can see the Index value of 1999, which matches the line number of 2000 (1999 data lines + 1 header line).
+
+We can also print a range of lines:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+sed -n '20000,20005p' organizations-2000000.csv     # print between 20,000 and 20,005
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ sed -n '20000,20005p' organizations-2000000.csv
+19999,e5101F0DAcc799f,Dorsey Group,http://daniels-rice.com/,Iceland,Synchronized dedicated approach,1984,Graphic Design / Web Design,2908
+20000,f9cA1c4E7Ad3796,Tyler PLC,https://black.com/,Netherlands Antilles,Virtual dedicated matrix,1983,Higher Education / Acadamia,6041
+20001,8b8D6118A9e3C8E,Vazquez PLC,http://www.landry-lang.net/,Comoros,Organic solution-oriented benchmark,1972,Fundraising,8120
+20002,3eE0aFab4ff7fbB,"Burke, Ellison and Harrington",https://www.ho-patterson.com/,Northern Mariana Islands,Reduced optimal knowledgebase,2015,Entertainment / Movie Production,28
+20003,4e2057ccA6c3aee,"Benton, Banks and Wyatt",http://www.bradshaw.net/,Suriname,Optimized maximized collaboration,1978,Maritime,9471
+20004,1e73F3E6CFAF38F,Welch and Sons,http://david.com/,Turkey,Stand-alone secondary hardware,1981,Railroad Manufacture,5107
+</pre></div>
+
+Note that this method could be used with redirection to create a subset of a large file based on a range of lines. How would you create a file that contains the header line and then lines 1000-2000 and lines 10.000-15,000?
+
+## Extracting columns with `cut`
+Sometimes one only wants to use or peruse one or more columns of data. Here we will demonstrate displaying a few columns. The `cut` command is used to select a subset of columns. 
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cut -f 1,3 -d "," organizations-2000000.csv | less -N
+```
+
+Here, `-f 1,3` instructs to pull the first and third columns; `-d ","` instructs to use commas as delimiters, and we pipe that through `less -N` to show numbered lines one screen at a time.
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ cut -f 1,3 -d "," organizations-2000000.csv | less -N
+      1 Index,Name
+      2 1,Daniel-Mcmahon
+      3 2,"Mcdowell
+      4 3,"Roberts
+      5 4,"Poole
+      6 5,"Ritter
+      7 6,Stafford Ltd
+      8 7,Roach Ltd
+      9 8,Gill PLC
+     10 9,Summers-Jordan
+     11 10,"Richard
+     12 11,"Harrington
+     13 12,Evans LLC
+     14 13,"Patterson
+     15 14,"Carlson
+     16 15,Duffy-Stark
+     17 16,"Frederick
+     18 17,"Walton
+     19 18,Oneal and Sons
+     20 19,Maynard-Bush
+     21 20,"Rosario
+     22 21,Brady Ltd
+     23 22,Odom Group
+</pre></div>
+
+Clearly there is a problem here because the second column contains some values that are quoted strings with embedded commas, so using `cut` only extracts partial columns for those. So although shell commands are powerful and fast, they often do not quite fit the task at hand.
+
+How could you create a new file consisting of only the first, second, and third columns of data from this file?
+
+## Searching for content within text files with `grep`
+Often we want to check whether any values exist within a file, and also where in the file the values are found. The `grep` command (short for "_g_lobally search a _r_egular _e_xpression and _p_rint") can be used to find matches and print the line numbers on which the searched text is found.
+
+Here we use a simple example of searching for the string "United States of America" within the large CSV file. The `-n` option prints matching line numbers
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+grep -n "United States of America" organizations-2000000.csv | head
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ grep -n "United States of America" organizations-2000000.csv  | head
+222:221,E9a3b333a1d82CC,"Hobbs, Aguirre and Woodward",https://diaz.com/,United States of America,Assimilated zero administration project,1978,Computer Games,3406
+616:615,E253b4a06f8c9db,"Cantu, Richard and Bullock",http://www.dawson-fleming.com/,United States of America,Multi-layered zero-defect orchestration,2005,Management Consulting,2375
+632:631,472B1381f822Ddc,Leblanc-Alvarez,https://arellano.com/,United States of America,Multi-layered 3rdgeneration alliance,2020,E - Learning,623
+1311:1310,E1D0642A6A3a56D,Long Ltd,https://palmer-joyce.com/,United States of America,Object-based full-range standardization,1985,Medical Equipment,4964
+1314:1313,35999520666Ee6A,Steele Group,https://elliott.com/,United States of America,Advanced 24/7 Internet solution,1970,Leisure / Travel,7469
+1395:1394,aEcb8FfCEC68aC3,Cox Inc,https://www.cooper-henson.com/,United States of America,Re-engineered bandwidth-monitored utilization,2001,Computer Hardware,94
+1882:1881,cb08A54fDcEaE6E,Keller-Nelson,http://hayes-orozco.com/,United States of America,Realigned 4thgeneration complexity,2014,Other Industry,5466
+1952:1951,d5A68eBe6A7eF8D,Fuller-Parsons,https://www.sexton-lyons.com/,United States of America,Expanded bottom-line approach,1989,Oil / Energy / Solar / Greentech,2952
+2043:2042,ae3d82c9c2EDdA2,Jordan-Rodgers,http://www.lowery.com/,United States of America,Persevering scalable support,2000,Food Production,2988
+2356:2355,F99bEBc3e6e6296,Fowler-Bishop,http://martin-shields.com/,United States of America,Optimized 24/7 customer loyalty,2018,Consumer Services,1433
+
+</pre></div>
+
+To validate the first matching line, look at the 222nd line in the file using `sed`:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+sed -n 222p organizations-2000000.csv
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ sed -n 222p organizations-2000000.csv                     
+221,E9a3b333a1d82CC,"Hobbs, Aguirre and Woodward",https://diaz.com/,United States of America,Assimilated zero administration project,1978,Computer Games,3406</pre></div>
+
+## Stream editing with `sed`
+Sometimes there are contents of a file that we want to change (search/replace). The typical way of doing this is to open the file in a text editor (Word, Notepad++, etc.) and the use search-and-replace. However, often files are too large to open in these applications. Using the stream editor allows us to define search-and replace parameters and to apply those in streaming mode. This way, memory is conserved as the search/replace is done one line at a time as the file is processed.
+
+Here we will replace "United States of America" with "USA" and save as a separate file. The `sed` command uses `s` for substitute. After the `s` comes the string to search for ("United States of America"), then the replacement string ("USA"), and finally `g` for global replacement (i.e., if the pattern is found more than one time on a line, replace each instance).
+
+The input to the command is the file "organizations-2000000.csv" and we use redirection to output to a new file "organizations-2000000_usa.csv".
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+sed "s/United States of America/USA/g" organizations-2000000.csv > organizations-2000000_usa.csv
+```
+
+The command completes without generating any output to the screen, but we can see the new file:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ltr
+```
+
+<div class="bash"><pre>ufl@nori:~/unixshell$ ltr
+total 498475
+-rw-r--r-- 1 ufl ufl 283437682 May 30  2022 organizations-2000000.csv
+lrwxrwxrwx 1 ufl ufl        20 Feb 22 20:29 cal_2023.txt -> ../junk/cal_2023.txt
+-rw-rw-r-- 1 ufl ufl  62374840 Feb 22 21:20 organizations-2000000.zip
+drwxr-xr-x 7 ufl ufl        18 Feb 22 22:36 ../
+drwxrwxr-x 2 ufl ufl         6 Feb 22 23:00 ./
+-rw-rw-r-- 1 ufl ufl 283269052 Feb 22 23:04 organizations-2000000_usa.csv
+</pre></div>
+
+And we can `grep` to check whether the search string exists:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+grep "United States of America" organizations-2000000_usa.csv
+```
+
+The command produces no output, indicating the search string was not found.

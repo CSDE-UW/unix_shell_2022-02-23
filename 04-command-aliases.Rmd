@@ -1,0 +1,194 @@
+```{r echo=FALSE}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# Command aliases and the `$PATH` to your own executables and commands
+
+In this section we will do some customization of commonly used commands. These are known as "aliases" and they act as variants of common commands, or shorthand commands for ones that are longer to type.
+
+To begin, let's try the command `ltr`:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ltr
+```
+
+<div class="bash"><pre>ufl@nori:~/bin$ ltr
+-bash: ltr: command not found</pre></div>
+
+This shows that the command `ltr` either does not exist or is not found within the executable path.
+
+We will now make an alias at the command line
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+alias ltr='ls -ltr'
+```
+
+There should be no response, which indicates no error.
+
+But now that we have the alias, we can use that as a command.
+
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ltr
+```
+
+<div class="bash"><pre>ufl@nori:~$ ltr
+total 9
+drwxrwxr-x 2 ufl ufl 4 Feb 21 16:14 bin
+</pre></div>
+
+It shows a long listing of files and directories in ascending order of file creation/modification time (i.e., more recent files at the bottom of the listing). Since we currently have only one item in our home directory, we see only this one listed. To prove the point:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+ltr /usr
+```
+
+<div class="bash"><pre>ufl@nori:~$ ltr /usr
+total 108
+drwxr-xr-x   2 root root  4096 Apr 18  2022 games
+drwxr-xr-x   2 root root  4096 Apr 20  2022 libx32
+drwxr-xr-x  10 root root  4096 Apr 20  2022 local
+drwxr-xr-x   2 root root  4096 Nov  2 16:12 lib64
+drwxr-xr-x   3 root root  4096 Nov  6 18:00 lib32
+drwxr-xr-x  12 root root  4096 Nov  6 20:38 libexec
+drwxr-xr-x  96 root root  4096 Dec 11 17:55 lib
+drwxr-xr-x 104 root root 12288 Jan 20 06:41 include
+drwxr-xr-x 164 root root  4096 Feb  3 16:57 share
+drwxr-xr-x   2 root root 20480 Feb  7 06:41 sbin
+drwxr-xr-x   2 root root 36864 Feb  9 06:01 bin
+drwxr-xr-x   6 root root  4096 Feb 10 06:09 src
+</pre></div>
+
+Now we will create a set of aliases that will be applied as soon as you log in.
+
+First, copy the `nano` text editor to your `~/bin` directory.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cp ~phurvitz/unixshell/nano ~/bin
+```
+
+Next, we will start editing the `.bashrc` file using the simple text editor `nano`. The `~/.bashrc` file is evaluated every time you open a bash shell.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+~/bin/nano ~/.bashrc
+```
+
+You should see the file contents loaded.
+
+```{r, fig.cap="cap", echo=FALSE}
+image_link("images/2023-02-21 17_15_04-nori.csde.washington.edu - PuTTY.png")
+```
+
+Go toward the end of the file by tapping the `Page Down` key several times until you see some aliases. After the last alias, enter a new line and copy/paste the following lines (remember R-click to paste):
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+alias cal='ncal -b'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias grep='grep --color=auto'
+alias hg='history | grep'
+alias l='ls -CF'
+alias la='ls -A'
+alias lo='exit'
+alias ls='ls --color=auto'
+alias ltr='ls -alFtr'
+alias mv='mv -i'
+alias rm='rm -i'
+alias R='R --no-save'  # don't save bit RData files!
+
+# PATH
+export PATH=$HOME/bin:$PATH
+```
+
+The first set of commands establishes useful aliases, and the last line sets the executable search path with your `~/bin` directory at the start of the path. This way, any commands or scripts that are located in `~/bin` can be run without specifying the path name, they will be executed if they are executable, and they will be run with precedence over other commands on the system with the same name.
+
+After you have pasted these into your `.bashrc` file, use the keystrokes `CTRL-O` (write; you will be prompted to overwrite the file) and `CTRL-X` to exit.
+
+To "source" or "run" the `~/.bashrc`, you can enter:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+. !$
+```
+
+The `.` indicates running the executable, and `!$` is shorthand for "the last word typed in the previous command," i.e., `. ~/.bashrc`. You will see the command echoed to the terminal.
+
+<div class="bash"><pre>ufl@nori:~$ . !$
+. ~/.bashrc
+</pre></div>
+
+Now we can see the current list of aliases:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+alias
+```
+
+That includes all of the aliases we have just added. And because these were put in `~/.bashrc` they will be automatically loaded 
+
+<div class="bash"><pre>ufl@nori:~$ alias
+alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+alias cal='ncal -b'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias grep='grep --color=auto'
+alias hg='history | grep'
+alias l='ls -CF'
+alias la='ls -A'
+alias ll='ls -alF'
+alias lo='exit'
+alias ls='ls --color=auto'
+alias ltr='ls -alFtr'
+alias mv='mv -i'
+alias rm='rm -i'
+alias R='R --no-save'  # don't save bit RData files!
+</pre></div>
+
+Additionally, because we set the `PATH` variable, we can run `nano` from any location without specifying the path to where the `nano` executable is located.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+cd /tmp/
+nano /etc/skel/.bash_logout
+```
+
+[Close the file with CTRL-X]
+
+This demonstrates that we can change the working directory to `/tmp` but still run the `nano` executable (although the file we are trying to edit cannot be edited due to file permissions).
+
+```{r fig.cap="cap", echo=FALSE}
+image_link("images/2023-02-21 17_52_28-ufl@nori_ _tmp.png")
+```
+
+Another way to prove that we have added `~/bin` to the executable path is to show which `nano` could be executed:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+which nano
+```
+
+<div class="bash"><pre>ufl@nori:/tmp$ which nano
+/homes/ufl/bin/nano</pre></div>
+
+When you write shell scripts, it is convenient to place them in `~/bin` within the executable path so it will not be necessary to explicitly state the location where the executable is on the file system. It is also easy to add path names to the `$PATH` environment variables if you want to store custom commands and scripts in more than one location on the file system.
+
+## A note on other text editors
+
+nano is a bare-bones text editor. There are other options such as [vim](https://www.vim.org/) and [Emacs](https://www.gnu.org/software/emacs/). These are far more full-featured, but are not easy to learn. Once mastered, they are more powerful and efficient than something like nano.
+
+Another user-friendly but powerful option is to use the [NppFTP](https://ashkulz.github.io/NppFTP/) plugin for [Notepad++](https://notepad-plus-plus.org/downloads/). It is possible to use the stand-alone version that does not require administrative rights to install; plugins can be installed this way without admin privilege. This shows I am able to edit the `~/.bashrc` on nori using Notepad++ on CSDE Sim2:
+
+```{r}
+image_link("images/2023-02-22 17_37_37-H__bin_npp.8.4.4.portable.x64_plugins_Config_NppFTP_Cache_ufl@nori.csde.washingt.png")
+```
+  

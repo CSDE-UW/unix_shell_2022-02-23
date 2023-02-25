@@ -1,0 +1,62 @@
+```{r echo=FALSE}
+library(htmltools)
+library(captioner)
+
+fn <- captioner(prefix = "Figure")
+tn <- captioner(prefix = "Table")
+
+knitr::opts_chunk$set(echo = FALSE, attr.source='.numberLines',  out.width="50%")
+
+image_link <- function(image, ...) {
+    htmltools::a(
+        href = image,
+        target = "_blank",
+        htmltools::img(src = image, ...)
+    )
+}
+```
+
+# Persistent sessions
+Let's take a moment to run a setup utility that can save you loads of time in the event your terminal session is interrupted. Imagine this scenario. You have logged into one of the Linux servers and are running and R session. You have a script that you are editing in another terminal. You have a data frame that takes 10 minutes lo load into memory and you have made changes to 20 lines of your code but you have not saved those changes. Your apartment loses power. Under typical circumstances, you would lose your unsaved work and you would need to wait for the data frame to load again.
+
+To avoid this, we can use the `screen` utility, that saves your terminal session in a persistent process. If your terminal connection is interrupted, you can pick up where you left off. The following command will create this process. The `-S unixshell` adds additional characters to the screen process so if you have multiple screen sessions to restore, you will be able to identify them. Run the command:
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+screen -S unixshell
+```
+
+You will see the terminal clear, but there will be no other indications of system changes.
+
+Now let's open a second terminal by R-click on the PuTTY title bar and selecting "Duplicate Session"
+
+```{r}
+image_link("images/2023-02-22 14_37_15-Window.png")
+```
+
+You now have two terminals running on the same system. To show the active screen sessions, enter
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+screen -ls
+```
+
+You should see something similar to what is shown here:
+
+<div class="bash"><pre>ufl@nori:~$ screen -ls
+There is a screen on:
+        565318.unixshell        (02/22/23 14:33:17)     (Attached)
+1 Socket in /run/screen/S-ufl.
+</pre></div>
+
+Now close your original terminal, accepting the question to close:
+
+```{r}
+image_link("images/2023-02-22 14_43_31-PuTTY Exit Confirmation.png")
+```
+
+In the new terminal, restore your session by entering `screen -Dr` with the screen session you listed earlier. For my session, I see `565318.unixshell`, but your session name will be different.
+
+```{r, engine = 'bash', eval = FALSE, attr.source='.numberLines', echo=TRUE}
+screen -Dr 565318.unixshell
+```
+
+This restores the session! No lost work! The screen session will be persistent unless for some reason it is closed by you or the system administrator, or if the server reboots.
